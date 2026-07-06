@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Trophy, ChevronDown } from 'lucide-react';
+import { Menu, X, LogIn, ChevronDown } from 'lucide-react';
 
 export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -117,11 +117,11 @@ export default function Header() {
                     {/* Quick CTAs / Hamburger */}
                     <div className="flex items-center space-x-4">
                         <Link
-                            to="/quiz"
+                            to="/login"
                             className="hidden lg:flex items-center space-x-2 bg-gradient-to-r from-accent to-accent-light text-primary hover:opacity-90 px-4 py-2 rounded font-sans text-xs font-semibold tracking-wide transition duration-300 shadow"
                         >
-                            <Trophy className="w-3.5 h-3.5" />
-                            <span>IKUTI QUIZ</span>
+                            <LogIn className="w-3.5 h-3.5" />
+                            <span>LOGIN</span>
                         </Link>
 
                         <button
@@ -241,11 +241,12 @@ export default function Header() {
                     </Link>
 
                     <Link
-                        to="/quiz"
+                        to="/login"
                         onClick={closeMenu}
-                        className="block w-full text-center bg-accent text-primary py-2.5 rounded font-sans text-xs font-semibold mt-4"
+                        className="flex items-center justify-center space-x-2 w-full bg-accent text-primary py-2.5 rounded font-sans text-xs font-semibold mt-4 shadow"
                     >
-                        IKUTI QUIZ HOME
+                        <LogIn className="w-4 h-4" />
+                        <span>LOGIN</span>
                     </Link>
                 </div>
             )}

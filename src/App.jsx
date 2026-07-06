@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Header from './components/layout/Header';
-import Footer from './components/layout/Footer';
+import PublicLayout from './components/layout/PublicLayout';
+import PanelLayout from './components/layout/PanelLayout';
 import ScrollToTop from './components/layout/ScrollToTop';
 
 // Pages
@@ -15,29 +15,36 @@ import HOMEStandard from './pages/HOMEStandard';
 import About from './pages/About';
 import Quiz from './pages/Quiz';
 import Prestasi from './pages/Prestasi';
+import Auth from './pages/Auth';
+import Panel from './pages/Panel';
+import MyProfile from './pages/MyProfile';
 
 function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <ScrollToTop />
-      <div className="min-h-screen flex flex-col bg-surface-warm text-slate-800 font-sans antialiased">
-        <Header />
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/fellows" element={<Fellows />} />
-            <Route path="/fellows/:id" element={<Profile />} />
-            <Route path="/forum" element={<Forum />} />
-            <Route path="/articles" element={<Articles />} />
-            <Route path="/pdca" element={<PDCA />} />
-            <Route path="/home-standard" element={<HOMEStandard />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/quiz" element={<Quiz />} />
-            <Route path="/prestasi" element={<Prestasi />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
+      <Routes>
+        {/* Public Routes */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/fellows" element={<Fellows />} />
+          <Route path="/fellows/:id" element={<Profile />} />
+          <Route path="/forum" element={<Forum />} />
+          <Route path="/articles" element={<Articles />} />
+          <Route path="/pdca" element={<PDCA />} />
+          <Route path="/home-standard" element={<HOMEStandard />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/quiz" element={<Quiz />} />
+          <Route path="/prestasi" element={<Prestasi />} />
+          <Route path="/login" element={<Auth />} />
+        </Route>
+
+        {/* Panel (Dashboard) Routes */}
+        <Route element={<PanelLayout />}>
+          <Route path="/panel" element={<Panel />} />
+          <Route path="/profile" element={<MyProfile />} />
+        </Route>
+      </Routes>
     </BrowserRouter>
   );
 }
