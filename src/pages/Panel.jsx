@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
     MessageSquare,
@@ -15,6 +15,14 @@ import {
 import { Link } from 'react-router-dom';
 
 export default function Panel() {
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const userData = localStorage.getItem('csm_user');
+        if (userData) {
+            setUser(JSON.parse(userData));
+        }
+    }, []);
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
@@ -34,7 +42,9 @@ export default function Panel() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-serif font-bold text-primary mb-1">Selamat datang, Budi!</h1>
+                    <h1 className="text-3xl font-serif font-bold text-primary mb-1">
+                        Selamat datang, {user?.name ? user.name.split(' ')[0] : 'Fellow'}!
+                    </h1>
                     <p className="text-gray-500 text-sm">Lihat ringkasan aktivitas dan progres Anda di sini.</p>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -58,21 +68,23 @@ export default function Panel() {
                     <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-bl-full -z-0"></div>
                     <div className="relative z-10">
                         <div className="flex items-center space-x-4 mb-6">
-                            <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white text-xl font-bold font-serif shadow-md border-2 border-accent">
-                                BS
-                            </div>
+                            <img 
+                                src={user?.avatar || 'https://incsmsociety.site/uploads/avatar/default.jpg'} 
+                                alt={user?.name || 'User'} 
+                                className="w-16 h-16 rounded-full object-cover shadow-md border-2 border-accent"
+                            />
                             <div>
-                                <h3 className="font-bold text-gray-800 text-lg">Budi Santoso</h3>
-                                <div className="flex items-center space-x-1 text-accent bg-accent/10 px-2 py-0.5 rounded text-xs font-semibold w-fit mt-1">
+                                <h3 className="font-bold text-gray-800 text-lg capitalize">{user?.name || 'User Name'}</h3>
+                                <div className="flex items-center space-x-1 text-accent bg-accent/10 px-2 py-0.5 rounded text-xs font-semibold w-fit mt-1 uppercase">
                                     <Award className="w-3 h-3" />
-                                    <span>Active Fellow</span>
+                                    <span>{user?.title || (user?.role === 'member' ? 'Member' : 'Fellow')}</span>
                                 </div>
                             </div>
                         </div>
                         <div className="space-y-3">
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">Angkatan</span>
-                                <span className="font-medium text-gray-800">Batch 3 - 2026</span>
+                                <span className="text-gray-500">Join at</span>
+                                <span className="font-medium text-gray-800">{user?.joinYear || new Date().getFullYear()}</span>
                             </div>
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-500">Poin Intelektual</span>
@@ -127,7 +139,7 @@ export default function Panel() {
                     <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white opacity-5 rounded-full blur-2xl"></div>
                     <h3 className="font-bold flex items-center space-x-2 mb-2">
                         <Award className="w-5 h-5 text-accent" />
-                        <span>Quiz H.O.M.E</span>
+                        <span>Quiz Intelectual</span>
                     </h3>
                     <p className="text-xs text-gray-300 mb-6">Pemahaman standar layanan</p>
 

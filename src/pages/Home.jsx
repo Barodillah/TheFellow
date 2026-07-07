@@ -1,17 +1,36 @@
-import React, { useRef, useEffect } from 'react';
-import { Shield, ArrowRight, Calendar, User, RefreshCcw, HeartHandshake } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { Shield, ArrowRight, Calendar, User, RefreshCcw, HeartHandshake, BookOpen, MessageSquare, Target, Users, Zap, Globe, Award, Briefcase, FileText, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import DecorativeRule from '../components/shared/DecorativeRule';
 
-import { BLOG_ARTICLES_DATA, FELLOWS_DATA } from '../data/mockData';
+import { BLOG_ARTICLES_DATA } from '../data/mockData';
 
 // Take the latest 3 articles for the home page
 const recentArticles = BLOG_ARTICLES_DATA.slice(0, 3);
 
 export default function Home() {
     const sliderRef = useRef(null);
-    const [infiniteFellows, setInfiniteFellows] = React.useState([...FELLOWS_DATA, ...FELLOWS_DATA]);
-    const [isHovered, setIsHovered] = React.useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const [dbFellows, setDbFellows] = useState([]);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const res = await fetch('https://incsmsociety.site/api/get_users.php');
+                const data = await res.json();
+                if (data.status === 'success') {
+                    // Hanya tampilkan role admin dan fellow di Home
+                    setDbFellows(data.users.filter(u => u.role === 'admin' || u.role === 'fellow'));
+                }
+            } catch (err) {
+                console.error("Gagal memuat fellows", err);
+            }
+        };
+        fetchUsers();
+    }, []);
+
+    // Create an infinite loop array by duplicating the data
+    const infiniteFellows = dbFellows.length > 0 ? [...dbFellows, ...dbFellows, ...dbFellows] : [];
 
     useEffect(() => {
         const container = sliderRef.current;
@@ -250,21 +269,21 @@ export default function Home() {
                                 <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/60 to-transparent opacity-90 group-hover:opacity-70 transition-opacity duration-500 z-10 pointer-events-none"></div>
 
                                 <img
-                                    src={fellow.avatar}
+                                    src={fellow.avatar || 'https://incsmsociety.site/uploads/avatar/default.jpg'}
                                     alt={fellow.name}
                                     className="w-full h-full object-cover object-top transform group-hover:scale-110 transition-transform duration-700 ease-in-out absolute inset-0"
                                 />
 
                                 <div className="absolute top-5 right-5 z-20 transform translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none">
                                     <span className="bg-surface-card/40 backdrop-blur-md border border-white/20 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
-                                        Sejak {fellow.joinYear}
+                                        Sejak {fellow.join_year || new Date().getFullYear()}
                                     </span>
                                 </div>
 
                                 <div className="absolute bottom-0 left-0 w-full p-6 z-20 flex flex-col justify-end h-full pointer-events-none">
                                     <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 ease-out pointer-events-auto">
                                         <span className="text-accent text-xs font-bold uppercase tracking-widest block mb-1">
-                                            {fellow.csmTitle}
+                                            {fellow.csm_title || 'CSM Fellow'}
                                         </span>
                                         <h3 className="font-serif text-2xl md:text-3xl font-bold text-white mb-1 group-hover:text-accent transition-colors duration-300">
                                             {fellow.name}
@@ -274,7 +293,7 @@ export default function Home() {
                                         <div className="grid grid-rows-[0fr] opacity-0 group-hover:grid-rows-[1fr] group-hover:opacity-100 transition-all duration-500 ease-in-out">
                                             <div className="overflow-hidden mt-4 border-t border-white/10 pt-4">
                                                 <p className="text-xs text-gray-300 italic mb-5 leading-relaxed line-clamp-2">
-                                                    "{fellow.quote}"
+                                                    "{fellow.quote || 'Berkomitmen pada kualitas pelayanan terbaik.'}"
                                                 </p>
 
                                                 <div className="flex items-center justify-between">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogIn, UserPlus, Mail, Lock, ArrowRight, Shield, Sparkles } from 'lucide-react';
@@ -8,10 +8,77 @@ export default function Auth() {
     const navigate = useNavigate();
     const defaultIsLogin = location.state?.isLogin !== undefined ? location.state.isLogin : true;
     const [isLogin, setIsLogin] = useState(defaultIsLogin);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [emailCheckMessage, setEmailCheckMessage] = useState(null);
+    const [checkingEmail, setCheckingEmail] = useState(false);
 
-    const handleLogin = (e) => {
+    useEffect(() => {
+        const storedUser = localStorage.getItem('csm_user');
+        if (storedUser) {
+            navigate('/panel');
+        }
+    }, [navigate]);
+
+    const handleEmailChange = (e) => {
+        setEmail(e.target.value);
+        setEmailCheckMessage(null);
+        setError('');
+    };
+
+    const handlePasswordFocus = async () => {
+        if (!email || emailCheckMessage) return;
+
+        setCheckingEmail(true);
+        try {
+            const response = await fetch('https://incsmsociety.site/api/check_email.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                if (!data.exists) {
+                    setEmailCheckMessage({ text: 'Email tidak terdaftar di sistem.', isError: true, showAction: false });
+                } else if (!data.is_active) {
+                    setEmailCheckMessage({ text: 'Akun Anda belum aktif (password belum diatur).', isError: true, showAction: true });
+                }
+            }
+        } catch (err) {
+            console.error('Gagal mengecek email');
+        } finally {
+            setCheckingEmail(false);
+        }
+    };
+
+    const handleLogin = async (e) => {
         e.preventDefault();
-        navigate('/panel');
+        setLoading(true);
+        setError('');
+
+        try {
+            const response = await fetch('https://incsmsociety.site/api/login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                localStorage.setItem('csm_user', JSON.stringify(data.user));
+                navigate('/panel');
+            } else {
+                setError(data.message || 'Login gagal.');
+            }
+        } catch (err) {
+            setError('Terjadi kesalahan koneksi server.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -127,6 +194,27 @@ export default function Auth() {
                                     <p className="text-gray-500 text-sm">Masukkan kredensial Anda untuk melanjutkan</p>
                                 </div>
 
+                                {error && (
+                                    <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm text-center">
+                                        {error}
+                                    </div>
+                                )}
+
+                                {emailCheckMessage && (
+                                    <div className="mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg text-sm text-center flex flex-col items-center">
+                                        <p>{emailCheckMessage.text}</p>
+                                        {emailCheckMessage.showAction && (
+                                            <button 
+                                                type="button" 
+                                                onClick={() => navigate('/reset-password', { state: { email } })} 
+                                                className="mt-2 bg-amber-200 hover:bg-amber-300 text-amber-800 font-bold px-4 py-1.5 rounded-full transition-colors"
+                                            >
+                                                Aktivasi Akun Sekarang
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+
                                 <form className="space-y-5" onSubmit={handleLogin}>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
@@ -136,6 +224,9 @@ export default function Auth() {
                                             </div>
                                             <input
                                                 type="email"
+                                                value={email}
+                                                onChange={handleEmailChange}
+                                                required
                                                 className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent/50 focus:border-accent bg-gray-50/50 focus:bg-white transition-all duration-200 outline-none"
                                                 placeholder="email@example.com"
                                             />
@@ -144,7 +235,7 @@ export default function Auth() {
                                     <div>
                                         <div className="flex items-center justify-between mb-1.5">
                                             <label className="block text-sm font-medium text-gray-700">Password</label>
-                                            <a href="#" className="text-xs text-primary font-medium hover:text-accent transition-colors">Lupa password?</a>
+                                            <button type="button" onClick={() => navigate('/reset-password', { state: { email } })} className="text-xs text-primary font-medium hover:text-accent transition-colors">Lupa password?</button>
                                         </div>
                                         <div className="relative">
                                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -152,6 +243,10 @@ export default function Auth() {
                                             </div>
                                             <input
                                                 type="password"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                onFocus={handlePasswordFocus}
+                                                required
                                                 className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent/50 focus:border-accent bg-gray-50/50 focus:bg-white transition-all duration-200 outline-none"
                                                 placeholder="••••••••"
                                             />
@@ -159,10 +254,11 @@ export default function Auth() {
                                     </div>
                                     <button
                                         type="submit"
-                                        className="w-full flex items-center justify-center space-x-2 bg-primary hover:bg-primary/90 text-white py-3.5 rounded-xl font-medium transition-all duration-300 shadow-lg shadow-primary/20 transform hover:-translate-y-0.5"
+                                        disabled={loading}
+                                        className="w-full flex items-center justify-center space-x-2 bg-primary hover:bg-primary/90 text-white py-3.5 rounded-xl font-medium transition-all duration-300 shadow-lg shadow-primary/20 transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
                                     >
-                                        <span>Masuk Sekarang</span>
-                                        <ArrowRight className="w-4 h-4" />
+                                        <span>{loading ? 'Memproses...' : 'Masuk Sekarang'}</span>
+                                        {!loading && <ArrowRight className="w-4 h-4" />}
                                     </button>
                                 </form>
                             </motion.div>

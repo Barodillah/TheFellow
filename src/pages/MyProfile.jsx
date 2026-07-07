@@ -1,50 +1,143 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Award, Activity, BookOpen, MessageSquare, Edit3, Save, X, Camera } from 'lucide-react';
-import { FELLOWS_DATA } from '../data/mockData';
+import { useNavigate } from 'react-router-dom';
+import Toast from '../components/shared/Toast';
 
 export default function MyProfile() {
-    // Menggunakan Budi Santoso sebagai mock user yang sedang login
-    const initialUser = FELLOWS_DATA[0];
-
+    const navigate = useNavigate();
+    const fileInputRef = useRef(null);
+    const [user, setUser] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+    const showToast = (message, type = 'success') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
+    };
+
     const [formData, setFormData] = useState({
-        name: initialUser.name,
-        title: initialUser.title,
-        csmTitle: initialUser.csmTitle,
-        bio: initialUser.bio,
-        quote: initialUser.quote,
-        specializations: initialUser.specializations.join(', '), // dipisahkan koma untuk input
+        name: '',
+        title: '',
+        csmTitle: '',
+        bio: '',
+        quote: '',
+        specializations: '',
     });
+
+    useEffect(() => {
+        const userData = localStorage.getItem('csm_user');
+        if (!userData) {
+            navigate('/');
+        } else {
+            const parsed = JSON.parse(userData);
+            setUser(parsed);
+            resetForm(parsed);
+        }
+    }, [navigate]);
+
+    const resetForm = (userData) => {
+        setFormData({
+            name: userData.name || '',
+            title: userData.title || '',
+            csmTitle: userData.csmTitle || '',
+            bio: userData.bio || '',
+            quote: userData.quote || '',
+            specializations: Array.isArray(userData.specializations) ? userData.specializations.join(', ') : '',
+        });
+    };
+
+    if (!user) return <div className="p-8 text-center text-gray-500">Memuat profil...</div>;
 
     // Stats and fixed data that aren't editable in this simple form
     const fixedData = {
-        avatar: initialUser.avatar,
-        badges: initialUser.badges,
-        joinYear: initialUser.joinYear,
-        stats: initialUser.stats,
-        achievements: initialUser.achievements
+        avatar: user.avatar || 'https://incsmsociety.site/uploads/avatar/default.jpg',
+        badges: Array.isArray(user.badges) ? user.badges : [],
+        joinYear: user.joinYear || new Date().getFullYear(),
+        stats: user.stats || { articles: 0, threads: 0, pdcaCases: 0 },
+        achievements: user.achievements || []
     };
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSave = () => {
-        // Simulasi simpan data
-        setIsEditing(false);
+    const handleSave = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch('https://incsmsociety.site/api/update_profile.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: user.id,
+                    ...formData
+                })
+            });
+
+            const data = await response.json();
+            if (data.status === 'success') {
+                localStorage.setItem('csm_user', JSON.stringify(data.user));
+                setUser(data.user);
+                setIsEditing(false);
+                showToast('Profil berhasil diperbarui!', 'success');
+            } else {
+                showToast(data.message || 'Gagal memperbarui profil.', 'error');
+            }
+        } catch (error) {
+            showToast('Terjadi kesalahan koneksi.', 'error');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleCancel = () => {
-        // Reset form data ke kondisi awal
-        setFormData({
-            name: initialUser.name,
-            title: initialUser.title,
-            csmTitle: initialUser.csmTitle,
-            bio: initialUser.bio,
-            quote: initialUser.quote,
-            specializations: initialUser.specializations.join(', '),
-        });
+        resetForm(user);
         setIsEditing(false);
+    };
+
+    const handleAvatarClick = () => {
+        if (isEditing && fileInputRef.current && !uploadingAvatar) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleAvatarChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+            showToast('Ukuran file maksimal 2MB.', 'error');
+            e.target.value = null;
+            return;
+        }
+
+        setUploadingAvatar(true);
+        const uploadData = new FormData();
+        uploadData.append('id', user.id);
+        uploadData.append('avatar', file);
+
+        try {
+            const response = await fetch('https://incsmsociety.site/api/upload_avatar.php', {
+                method: 'POST',
+                body: uploadData // fetch otomatis menyetel multipart/form-data
+            });
+
+            const data = await response.json();
+            if (data.status === 'success') {
+                const updatedUser = { ...user, avatar: data.avatar };
+                localStorage.setItem('csm_user', JSON.stringify(updatedUser));
+                setUser(updatedUser);
+                showToast('Avatar berhasil diperbarui!', 'success');
+            } else {
+                showToast(data.message || 'Gagal mengunggah avatar.', 'error');
+            }
+        } catch (error) {
+            showToast('Terjadi kesalahan koneksi server.', 'error');
+        } finally {
+            setUploadingAvatar(false);
+            e.target.value = null; // Reset nilai input
+        }
     };
 
     return (
@@ -72,13 +165,27 @@ export default function MyProfile() {
                     </div>
                     
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 relative z-10">
-                        <div className="relative group">
+                        <input 
+                            type="file" 
+                            accept="image/png, image/jpeg, image/jpg, image/webp" 
+                            className="hidden" 
+                            ref={fileInputRef} 
+                            onChange={handleAvatarChange} 
+                        />
+                        <div className="relative group" onClick={handleAvatarClick}>
                             <img 
                                 src={fixedData.avatar} 
                                 alt={formData.name} 
-                                className="w-32 h-32 sm:w-48 sm:h-48 rounded-full object-cover border-4 border-accent shadow-lg"
+                                className={`w-32 h-32 sm:w-48 sm:h-48 rounded-full object-cover border-4 border-accent shadow-lg ${uploadingAvatar ? 'opacity-50' : ''}`}
                             />
-                            {isEditing && (
+                            
+                            {uploadingAvatar && (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                            )}
+
+                            {isEditing && !uploadingAvatar && (
                                 <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Camera className="w-8 h-8 text-white" />
                                 </div>
@@ -91,9 +198,10 @@ export default function MyProfile() {
                                         type="text" 
                                         name="title" 
                                         value={formData.title} 
-                                        onChange={handleChange} 
-                                        className="w-full bg-white/10 border border-white/20 rounded px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-accent placeholder-white/50 focus:outline-none focus:border-accent"
+                                        readOnly
+                                        className="w-full bg-transparent border-none rounded px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-accent/70 cursor-not-allowed focus:outline-none"
                                         placeholder="Gelar / Jabatan (e.g., SENIOR FELLOW)"
+                                        title="Jabatan hanya bisa diubah oleh Admin"
                                     />
                                     <input 
                                         type="text" 
@@ -259,14 +367,23 @@ export default function MyProfile() {
                         </button>
                         <button 
                             onClick={handleSave}
-                            className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-md shadow-primary/20"
+                            disabled={loading}
+                            className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-md shadow-primary/20 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             <Save className="w-4 h-4" />
-                            <span>Simpan Perubahan</span>
+                            <span>{loading ? 'Menyimpan...' : 'Simpan Perubahan'}</span>
                         </button>
                     </div>
                 )}
             </div>
+
+            {/* Toast Notification */}
+            <Toast 
+                show={toast.show} 
+                message={toast.message} 
+                type={toast.type} 
+                onClose={() => setToast(prev => ({ ...prev, show: false }))} 
+            />
         </div>
     );
 }

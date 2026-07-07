@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, LogIn, ChevronDown } from 'lucide-react';
 
 export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [mobileDropdown, setMobileDropdown] = useState(null);
+    const [user, setUser] = useState(null);
     const location = useLocation();
+
+    useEffect(() => {
+        const userData = localStorage.getItem('csm_user');
+        if (userData) {
+            setUser(JSON.parse(userData));
+        }
+    }, [location]);
 
     const isActive = (path) => location.pathname === path;
 
@@ -33,13 +41,13 @@ export default function Header() {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex space-x-6 items-center">
-                        <Link 
-                            to="/" 
+                        <Link
+                            to="/"
                             className={`text-sm font-medium hover:text-accent transition duration-200 ${isActive('/') ? 'text-accent' : 'text-gray-300'}`}
                         >
                             Beranda
                         </Link>
-                        
+
                         {/* Fellowship Dropdown */}
                         <div className="relative group">
                             <button className="flex items-center space-x-1 text-sm font-medium text-gray-300 hover:text-accent transition duration-200 py-2">
@@ -47,14 +55,20 @@ export default function Header() {
                                 <ChevronDown className="w-4 h-4" />
                             </button>
                             <div className="absolute left-0 mt-0 w-48 bg-surface-card rounded-md shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-accent/20 z-50">
-                                <Link 
-                                    to="/fellows" 
+                                <Link
+                                    to="/fellows"
                                     className={`block px-4 py-2 text-sm hover:bg-surface-warm transition-colors ${isActive('/fellows') ? 'text-accent font-bold' : 'text-primary'}`}
                                 >
                                     Direktori Fellow
                                 </Link>
-                                <Link 
-                                    to="/forum" 
+                                <Link
+                                    to="/prestasi"
+                                    className={`block px-4 py-2 text-sm hover:bg-surface-warm transition-colors ${isActive('/prestasi') ? 'text-accent font-bold' : 'text-primary'}`}
+                                >
+                                    Prestasi
+                                </Link>
+                                <Link
+                                    to="/forum"
                                     className={`block px-4 py-2 text-sm hover:bg-surface-warm transition-colors ${isActive('/forum') ? 'text-accent font-bold' : 'text-primary'}`}
                                 >
                                     Forum Diskusi
@@ -69,17 +83,24 @@ export default function Header() {
                                 <ChevronDown className="w-4 h-4" />
                             </button>
                             <div className="absolute left-0 mt-0 w-48 bg-surface-card rounded-md shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-accent/20 z-50">
-                                <Link 
-                                    to="/articles" 
+                                <Link
+                                    to="/articles"
                                     className={`block px-4 py-2 text-sm hover:bg-surface-warm transition-colors ${isActive('/articles') ? 'text-accent font-bold' : 'text-primary'}`}
                                 >
-                                    Artikel & Publikasi
+                                    Artikel & Update
                                 </Link>
-                                <Link 
-                                    to="/prestasi" 
-                                    className={`block px-4 py-2 text-sm hover:bg-surface-warm transition-colors ${isActive('/prestasi') ? 'text-accent font-bold' : 'text-primary'}`}
+                                <Link
+                                    to="/publikasi"
+                                    className={`block px-4 py-2 text-sm hover:bg-surface-warm transition-colors ${isActive('/publikasi') ? 'text-accent font-bold' : 'text-primary'}`}
                                 >
-                                    Prestasi
+                                    Publikasi (PDF)
+                                </Link>
+                                <Link
+                                    to="/smart-library"
+                                    className={`block px-4 py-2 text-sm hover:bg-surface-warm transition-colors flex items-center justify-between ${isActive('/smart-library') ? 'text-accent font-bold' : 'text-primary'}`}
+                                >
+                                    <span>Smart Library</span>
+                                    <span className="text-[10px] bg-accent text-primary px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ml-2">AI</span>
                                 </Link>
                             </div>
                         </div>
@@ -91,14 +112,14 @@ export default function Header() {
                                 <ChevronDown className="w-4 h-4" />
                             </button>
                             <div className="absolute left-0 mt-0 w-48 bg-surface-card rounded-md shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-accent/20 z-50">
-                                <Link 
-                                    to="/pdca" 
+                                <Link
+                                    to="/pdca"
                                     className={`block px-4 py-2 text-sm hover:bg-surface-warm transition-colors ${isActive('/pdca') ? 'text-accent font-bold' : 'text-primary'}`}
                                 >
                                     PDCA Tracker
                                 </Link>
-                                <Link 
-                                    to="/home-standard" 
+                                <Link
+                                    to="/home-standard"
                                     className={`block px-4 py-2 text-sm hover:bg-surface-warm transition-colors ${isActive('/home-standard') ? 'text-accent font-bold' : 'text-primary'}`}
                                 >
                                     Standar H.O.M.E
@@ -106,8 +127,8 @@ export default function Header() {
                             </div>
                         </div>
 
-                        <Link 
-                            to="/about" 
+                        <Link
+                            to="/about"
                             className={`text-sm font-medium hover:text-accent transition duration-200 ${isActive('/about') ? 'text-accent' : 'text-gray-300'}`}
                         >
                             Tentang Kami
@@ -116,13 +137,23 @@ export default function Header() {
 
                     {/* Quick CTAs / Hamburger */}
                     <div className="flex items-center space-x-4">
-                        <Link
-                            to="/login"
-                            className="hidden lg:flex items-center space-x-2 bg-gradient-to-r from-accent to-accent-light text-primary hover:opacity-90 px-4 py-2 rounded font-sans text-xs font-semibold tracking-wide transition duration-300 shadow"
-                        >
-                            <LogIn className="w-3.5 h-3.5" />
-                            <span>LOGIN</span>
-                        </Link>
+                        {user ? (
+                            <Link
+                                to="/panel"
+                                className="hidden lg:flex items-center space-x-2 bg-gradient-to-r from-accent to-accent-light text-primary hover:opacity-90 px-4 py-2 rounded font-sans text-xs font-semibold tracking-wide transition duration-300 shadow"
+                            >
+                                <img src={user.avatar || 'https://incsmsociety.site/uploads/avatar/default.jpg'} alt="Avatar" className="w-4 h-4 rounded-full object-cover border border-primary/20" />
+                                <span>PANEL</span>
+                            </Link>
+                        ) : (
+                            <Link
+                                to="/login"
+                                className="hidden lg:flex items-center space-x-2 bg-gradient-to-r from-accent to-accent-light text-primary hover:opacity-90 px-4 py-2 rounded font-sans text-xs font-semibold tracking-wide transition duration-300 shadow"
+                            >
+                                <LogIn className="w-3.5 h-3.5" />
+                                <span>LOGIN</span>
+                            </Link>
+                        )}
 
                         <button
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -137,8 +168,8 @@ export default function Header() {
             {/* Mobile Dropdown Navigation */}
             {mobileMenuOpen && (
                 <div className="md:hidden bg-primary border-t border-accent/20 px-4 py-4 space-y-3">
-                    <Link 
-                        to="/" 
+                    <Link
+                        to="/"
                         onClick={closeMenu}
                         className="block w-full text-left py-2 px-3 rounded hover:bg-primary-light text-gray-200 text-sm"
                     >
@@ -147,7 +178,7 @@ export default function Header() {
 
                     {/* Mobile Fellowship Dropdown */}
                     <div>
-                        <button 
+                        <button
                             onClick={() => toggleMobileDropdown('fellowship')}
                             className="flex items-center justify-between w-full text-left py-2 px-3 rounded hover:bg-primary-light text-gray-200 text-sm"
                         >
@@ -156,15 +187,15 @@ export default function Header() {
                         </button>
                         {mobileDropdown === 'fellowship' && (
                             <div className="pl-6 py-2 space-y-2">
-                                <Link 
-                                    to="/fellows" 
+                                <Link
+                                    to="/fellows"
                                     onClick={closeMenu}
                                     className="block w-full text-left py-1 text-gray-400 hover:text-accent text-sm"
                                 >
                                     Direktori Fellow
                                 </Link>
-                                <Link 
-                                    to="/forum" 
+                                <Link
+                                    to="/forum"
                                     onClick={closeMenu}
                                     className="block w-full text-left py-1 text-gray-400 hover:text-accent text-sm"
                                 >
@@ -176,7 +207,7 @@ export default function Header() {
 
                     {/* Mobile News Dropdown */}
                     <div>
-                        <button 
+                        <button
                             onClick={() => toggleMobileDropdown('news')}
                             className="flex items-center justify-between w-full text-left py-2 px-3 rounded hover:bg-primary-light text-gray-200 text-sm"
                         >
@@ -185,19 +216,34 @@ export default function Header() {
                         </button>
                         {mobileDropdown === 'news' && (
                             <div className="pl-6 py-2 space-y-2">
-                                <Link 
-                                    to="/articles" 
+                                <Link
+                                    to="/articles"
                                     onClick={closeMenu}
                                     className="block w-full text-left py-1 text-gray-400 hover:text-accent text-sm"
                                 >
-                                    Artikel & Publikasi
+                                    Artikel & Update
                                 </Link>
-                                <Link 
-                                    to="/prestasi" 
+                                <Link
+                                    to="/publikasi"
+                                    onClick={closeMenu}
+                                    className="block w-full text-left py-1 text-gray-400 hover:text-accent text-sm"
+                                >
+                                    Publikasi (PDF)
+                                </Link>
+                                <Link
+                                    to="/prestasi"
                                     onClick={closeMenu}
                                     className="block w-full text-left py-1 text-gray-400 hover:text-accent text-sm"
                                 >
                                     Prestasi
+                                </Link>
+                                <Link
+                                    to="/smart-library"
+                                    onClick={closeMenu}
+                                    className="block w-full text-left py-1 text-gray-400 hover:text-accent text-sm flex items-center gap-2"
+                                >
+                                    Smart Library
+                                    <span className="text-[9px] bg-accent text-primary px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">AI</span>
                                 </Link>
                             </div>
                         )}
@@ -205,7 +251,7 @@ export default function Header() {
 
                     {/* Mobile Pilar Dropdown */}
                     <div>
-                        <button 
+                        <button
                             onClick={() => toggleMobileDropdown('pilar')}
                             className="flex items-center justify-between w-full text-left py-2 px-3 rounded hover:bg-primary-light text-gray-200 text-sm"
                         >
@@ -214,15 +260,15 @@ export default function Header() {
                         </button>
                         {mobileDropdown === 'pilar' && (
                             <div className="pl-6 py-2 space-y-2">
-                                <Link 
-                                    to="/pdca" 
+                                <Link
+                                    to="/pdca"
                                     onClick={closeMenu}
                                     className="block w-full text-left py-1 text-gray-400 hover:text-accent text-sm"
                                 >
                                     PDCA Tracker
                                 </Link>
-                                <Link 
-                                    to="/home-standard" 
+                                <Link
+                                    to="/home-standard"
                                     onClick={closeMenu}
                                     className="block w-full text-left py-1 text-gray-400 hover:text-accent text-sm"
                                 >
@@ -232,22 +278,33 @@ export default function Header() {
                         )}
                     </div>
 
-                    <Link 
-                        to="/about" 
+                    <Link
+                        to="/about"
                         onClick={closeMenu}
                         className="block w-full text-left py-2 px-3 rounded hover:bg-primary-light text-gray-200 text-sm"
                     >
                         Tentang Kami
                     </Link>
 
-                    <Link
-                        to="/login"
-                        onClick={closeMenu}
-                        className="flex items-center justify-center space-x-2 w-full bg-accent text-primary py-2.5 rounded font-sans text-xs font-semibold mt-4 shadow"
-                    >
-                        <LogIn className="w-4 h-4" />
-                        <span>LOGIN</span>
-                    </Link>
+                    {user ? (
+                        <Link
+                            to="/panel"
+                            onClick={closeMenu}
+                            className="flex items-center justify-center space-x-2 w-full bg-accent text-primary py-2.5 rounded font-sans text-xs font-semibold mt-4 shadow"
+                        >
+                            <img src={user.avatar || 'https://incsmsociety.site/uploads/avatar/default.jpg'} alt="Avatar" className="w-4 h-4 rounded-full object-cover border border-primary/20" />
+                            <span>PANEL</span>
+                        </Link>
+                    ) : (
+                        <Link
+                            to="/login"
+                            onClick={closeMenu}
+                            className="flex items-center justify-center space-x-2 w-full bg-accent text-primary py-2.5 rounded font-sans text-xs font-semibold mt-4 shadow"
+                        >
+                            <LogIn className="w-4 h-4" />
+                            <span>LOGIN</span>
+                        </Link>
+                    )}
                 </div>
             )}
         </header>

@@ -15,9 +15,16 @@ import HOMEStandard from './pages/HOMEStandard';
 import About from './pages/About';
 import Quiz from './pages/Quiz';
 import Prestasi from './pages/Prestasi';
+import Publikasi from './pages/Publikasi';
+import SmartLibrary from './pages/SmartLibrary';
 import Auth from './pages/Auth';
+import ResetPassword from './pages/ResetPassword';
 import Panel from './pages/Panel';
 import MyProfile from './pages/MyProfile';
+import Users from './pages/Users';
+import PanelFellows from './pages/PanelFellows';
+import PanelProfileView from './pages/PanelProfileView';
+import PanelAchievements from './pages/PanelAchievements';
 
 function App() {
   return (
@@ -36,13 +43,20 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/prestasi" element={<Prestasi />} />
+          <Route path="/publikasi" element={<Publikasi />} />
+          <Route path="/smart-library" element={<SmartLibrary />} />
           <Route path="/login" element={<Auth />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
 
         {/* Panel (Dashboard) Routes */}
         <Route element={<PanelLayout />}>
           <Route path="/panel" element={<Panel />} />
+          <Route path="/directory" element={<PanelFellows />} />
+          <Route path="/directory/:id" element={<PanelProfileView />} />
           <Route path="/profile" element={<MyProfile />} />
+          <Route path="/achievements" element={<PanelAchievements />} />
+          <Route path="/users" element={<Users />} />
         </Route>
       </Routes>
     </BrowserRouter>

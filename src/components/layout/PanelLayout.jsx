@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
     Users,
     MessageSquare,
     Target,
     Award,
+    Trophy,
     User,
     Settings,
     LogOut,
@@ -18,6 +19,17 @@ import {
 export default function PanelLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
     const location = useLocation();
+    const navigate = useNavigate();
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const userData = localStorage.getItem('csm_user');
+        if (!userData) {
+            navigate('/login');
+        } else {
+            setUser(JSON.parse(userData));
+        }
+    }, [navigate]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -35,12 +47,22 @@ export default function PanelLayout() {
         { icon: LayoutDashboard, label: 'Overview', path: '/panel' },
         { icon: Target, label: 'PDCA Tracker', path: '/pdca' },
         { icon: MessageSquare, label: 'Forum Diskusi', path: '/forum' },
-        { icon: Users, label: 'Direktori Fellow', path: '/fellows' },
+        { icon: Users, label: 'Direktori Fellow', path: '/directory' },
         { icon: Award, label: 'Standar H.O.M.E', path: '/home-standard' },
         { divider: true },
         { icon: User, label: 'Profil Saya', path: '/profile' },
+        { icon: Trophy, label: 'Achievements', path: '/achievements' },
         { icon: Settings, label: 'Pengaturan', path: '/settings' },
+        ...(user?.role === 'admin' ? [{ icon: Users, label: 'Users', path: '/users' }] : [])
     ];
+
+    const handleLogout = (e) => {
+        e.preventDefault();
+        localStorage.removeItem('csm_user');
+        navigate('/');
+    };
+
+    if (!user) return null; // Render nothing until user is validated
 
     return (
         <div className="flex h-screen bg-surface-warm overflow-hidden text-slate-800 font-sans antialiased">
@@ -112,10 +134,10 @@ export default function PanelLayout() {
                 </div>
 
                 <div className="p-4 border-t border-accent/10">
-                    <Link to="/" className="flex items-center w-full px-3 py-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-colors group">
+                    <button onClick={handleLogout} className="flex items-center w-full px-3 py-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-colors group">
                         <LogOut className={`w-5 h-5 ${!sidebarOpen && 'mx-auto'}`} />
                         {sidebarOpen && <span className="ml-3 text-sm font-medium">Keluar</span>}
-                    </Link>
+                    </button>
                 </div>
             </aside>
 
@@ -159,13 +181,18 @@ export default function PanelLayout() {
 
                         <div className="h-8 w-px bg-gray-200 mx-1 hidden sm:block"></div>
 
-                        <div className="flex items-center space-x-3 cursor-pointer p-1 pr-2 rounded-full hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200">
-                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold font-serif shadow-sm">
-                                BS
-                            </div>
+                        <div 
+                            onClick={() => navigate('/profile')}
+                            className="flex items-center space-x-3 cursor-pointer p-1 pr-2 rounded-full hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
+                        >
+                            <img 
+                                src={user?.avatar || 'https://incsmsociety.site/uploads/avatar/default.jpg'} 
+                                alt={user?.name || 'User'} 
+                                className="w-8 h-8 rounded-full object-cover border border-gray-200 shadow-sm"
+                            />
                             <div className="hidden md:block text-left">
-                                <p className="text-sm font-semibold text-gray-700 leading-tight">Budi Santoso</p>
-                                <p className="text-[10px] text-gray-500">Active Fellow</p>
+                                <p className="text-sm font-semibold text-gray-700 leading-tight">{user?.name}</p>
+                                <p className="text-[10px] text-gray-500 uppercase">{user?.role || 'Member'}</p>
                             </div>
                         </div>
                     </div>
@@ -177,7 +204,7 @@ export default function PanelLayout() {
                     <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none -z-10"></div>
 
                     <div className="p-4 sm:p-6 lg:p-8">
-                        <Outlet />
+                        <Outlet context={{ user }} />
                     </div>
                 </main>
 
