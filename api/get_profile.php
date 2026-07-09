@@ -15,7 +15,7 @@ if (empty($id)) {
 }
 
 try {
-    $stmt = $pdo->prepare("SELECT id, registration_number, email, phone, role, name, title, csm_title, join_year, avatar, bio, quote, specializations, badges, stats_articles, stats_threads, stats_pdca_cases, created_at FROM users WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT id, registration_number, email, phone, role, name, title, csm_title, join_year, avatar, bio, quote, specializations, badges, (SELECT COUNT(*) FROM publikasi WHERE user_id = users.id AND status = 'publish') AS stats_publikasi, stats_articles, stats_threads, stats_pdca_cases, created_at FROM users WHERE id = ?");
     $stmt->execute([$id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     

@@ -13,7 +13,8 @@ import {
     Menu,
     Search,
     Bell,
-    X
+    X,
+    BookOpen
 } from 'lucide-react';
 
 export default function PanelLayout() {
@@ -52,6 +53,7 @@ export default function PanelLayout() {
         { divider: true },
         { icon: User, label: 'Profil Saya', path: '/profile' },
         { icon: Trophy, label: 'Achievements', path: '/achievements' },
+        { icon: BookOpen, label: 'Publikasi', path: '/manage-publikasi' },
         { icon: Settings, label: 'Pengaturan', path: '/settings' },
         ...(user?.role === 'admin' ? [{ icon: Users, label: 'Users', path: '/users' }] : [])
     ];

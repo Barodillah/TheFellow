@@ -195,6 +195,13 @@ export default function Header() {
                                     Direktori Fellow
                                 </Link>
                                 <Link
+                                    to="/prestasi"
+                                    onClick={closeMenu}
+                                    className="block w-full text-left py-1 text-gray-400 hover:text-accent text-sm"
+                                >
+                                    Prestasi
+                                </Link>
+                                <Link
                                     to="/forum"
                                     onClick={closeMenu}
                                     className="block w-full text-left py-1 text-gray-400 hover:text-accent text-sm"
@@ -229,13 +236,6 @@ export default function Header() {
                                     className="block w-full text-left py-1 text-gray-400 hover:text-accent text-sm"
                                 >
                                     Publikasi (PDF)
-                                </Link>
-                                <Link
-                                    to="/prestasi"
-                                    onClick={closeMenu}
-                                    className="block w-full text-left py-1 text-gray-400 hover:text-accent text-sm"
-                                >
-                                    Prestasi
                                 </Link>
                                 <Link
                                     to="/smart-library"

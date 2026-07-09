@@ -42,3 +42,26 @@ CREATE TABLE otps (
     expires_at DATETIME NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 4. Membuat tabel publikasi
+CREATE TABLE publikasi (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id CHAR(36) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NULL,
+    category VARCHAR(100) NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    cover_name VARCHAR(255) NOT NULL,
+    visibility ENUM('public', 'private') DEFAULT 'public',
+    status ENUM('draft', 'request', 'publish', 'archive') DEFAULT 'draft',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE publikasi_tags (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    publikasi_id INT NOT NULL,
+    tag_name VARCHAR(50) NOT NULL,
+    FOREIGN KEY (publikasi_id) REFERENCES publikasi(id) ON DELETE CASCADE
+);

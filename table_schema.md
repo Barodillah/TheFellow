@@ -46,3 +46,23 @@ Tabel untuk menyimpan daftar pencapaian (Achievement Timeline).
 - `competition` (VARCHAR(255)) - Nama kompetisi/kegiatan.
 - `description` (TEXT, Nullable) - Penjelasan detail pencapaian.
 - `created_at` (TIMESTAMP)
+
+### 4. Tabel `publikasi`
+Tabel untuk menyimpan data publikasi buku saku, jurnal, atau dokumen PDF.
+- `id` (INT AUTO_INCREMENT, Primary Key)
+- `user_id` (CHAR(36), Foreign Key ke tabel `users`) - Author/Pengunggah dokumen.
+- `title` (VARCHAR(255)) - Judul publikasi.
+- `description` (TEXT, Nullable) - Deskripsi atau sinopsis singkat publikasi.
+- `category` (VARCHAR(100)) - Kategori publikasi.
+- `file_name` (VARCHAR(255)) - Nama unik file PDF yang tersimpan di server.
+- `cover_name` (VARCHAR(255)) - Nama unik file gambar cover yang tersimpan di server.
+- `visibility` (ENUM: 'public', 'private') - Status visibilitas dokumen ('private' khusus fellow).
+- `status` (ENUM: 'draft', 'request', 'publish', 'archive') - Status persetujuan dokumen.
+- `created_at` (TIMESTAMP)
+- `updated_at` (TIMESTAMP)
+
+### 5. Tabel `publikasi_tags`
+Tabel untuk menyimpan tag yang terkait dengan publikasi.
+- `id` (INT AUTO_INCREMENT, Primary Key)
+- `publikasi_id` (INT, Foreign Key ke tabel `publikasi`) - ID publikasi terkait.
+- `tag_name` (VARCHAR(50)) - Nama tag.

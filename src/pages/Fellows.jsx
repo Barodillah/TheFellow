@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Award, MessageSquare, Briefcase, Search } from 'lucide-react';
+import { ChevronRight, Award, MessageSquare, Briefcase, Search, BookOpen } from 'lucide-react';
 
 export default function Fellows() {
     const [users, setUsers] = useState([]);
@@ -80,7 +80,7 @@ export default function Fellows() {
                                 <div className="flex items-center justify-between">
                                     <div className="flex gap-2">
                                         <div className="flex items-center gap-1 text-[11px] font-bold text-primary bg-accent/90 px-2 py-1 rounded">
-                                            <Award className="w-3 h-3" /> {user.stats_articles || 0}
+                                            <BookOpen className="w-3 h-3" /> {user.stats_publikasi ?? user.stats_articles ?? 0}
                                         </div>
                                         <div className="flex items-center gap-1 text-[11px] font-bold text-white bg-white/10 border border-white/20 px-2 py-1 rounded">
                                             <MessageSquare className="w-3 h-3 text-gray-300" /> {user.stats_threads || 0}

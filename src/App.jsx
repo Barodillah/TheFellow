@@ -25,6 +25,7 @@ import Users from './pages/Users';
 import PanelFellows from './pages/PanelFellows';
 import PanelProfileView from './pages/PanelProfileView';
 import PanelAchievements from './pages/PanelAchievements';
+import PanelPublikasi from './pages/PanelPublikasi';
 
 function App() {
   return (
@@ -56,6 +57,7 @@ function App() {
           <Route path="/directory/:id" element={<PanelProfileView />} />
           <Route path="/profile" element={<MyProfile />} />
           <Route path="/achievements" element={<PanelAchievements />} />
+          <Route path="/manage-publikasi" element={<PanelPublikasi />} />
           <Route path="/users" element={<Users />} />
         </Route>
       </Routes>

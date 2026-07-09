@@ -21,7 +21,7 @@ if (empty($email) || empty($password)) {
 
 try {
     // Cari user berdasarkan email
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
+    $stmt = $pdo->prepare("SELECT *, (SELECT COUNT(*) FROM publikasi WHERE user_id = users.id AND status = 'publish') AS stats_publikasi FROM users WHERE email = ? LIMIT 1");
     $stmt->execute([$email]);
     $user = $stmt->fetch();
 
@@ -53,7 +53,7 @@ try {
             
             // Map stats jika diperlukan
             $user['stats'] = [
-                'articles' => (int)($user['stats_articles'] ?? 0),
+                'articles' => (int)($user['stats_publikasi'] ?? $user['stats_articles'] ?? 0),
                 'threads' => (int)($user['stats_threads'] ?? 0),
                 'pdcaCases' => (int)($user['stats_pdca_cases'] ?? 0),
             ];

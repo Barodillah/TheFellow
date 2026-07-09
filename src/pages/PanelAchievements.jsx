@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Plus, Trash2, Calendar, Award, Loader2, Edit2, Medal } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 
 export default function PanelAchievements() {
     const { user } = useOutletContext();
@@ -245,9 +246,10 @@ export default function PanelAchievements() {
             )}
 
             {/* Modal Tambah Prestasi */}
+            {createPortal(
             <AnimatePresence>
                 {showModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
                         <motion.div 
                             initial={{ opacity: 0 }} 
                             animate={{ opacity: 1 }} 
@@ -358,6 +360,7 @@ export default function PanelAchievements() {
                     </div>
                 )}
             </AnimatePresence>
+            , document.body)}
         </div>
     );
 }

@@ -60,7 +60,7 @@ export default function Profile() {
         badges: Array.isArray(user.badges) ? user.badges : [],
         joinYear: user.join_year || new Date().getFullYear(),
         stats: { 
-            articles: user.stats_articles || 0, 
+            articles: user.stats_publikasi ?? user.stats_articles ?? 0, 
             threads: user.stats_threads || 0, 
             pdcaCases: user.stats_pdca_cases || 0 
         },
@@ -203,7 +203,7 @@ export default function Profile() {
                                                 <div className="w-8 h-8 rounded bg-white/10 flex items-center justify-center border border-white/5">
                                                     <BookOpen className="w-4 h-4 text-accent" />
                                                 </div>
-                                                <span className="text-sm font-semibold">Artikel Jurnal</span>
+                                                <span className="text-sm font-semibold">Publikasi</span>
                                             </div>
                                             <span className="font-bold text-xl">{fixedData.stats.articles}</span>
                                         </div>

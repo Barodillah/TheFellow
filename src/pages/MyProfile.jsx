@@ -332,7 +332,7 @@ export default function MyProfile() {
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3 text-slate-600">
                                             <BookOpen className="w-5 h-5 text-accent" />
-                                            <span className="text-sm font-semibold">Artikel Jurnal</span>
+                                            <span className="text-sm font-semibold">Publikasi</span>
                                         </div>
                                         <span className="font-bold text-primary">{fixedData.stats.articles}</span>
                                     </div>

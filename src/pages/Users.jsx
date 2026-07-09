@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, Shield, User, Award, Search, Edit2, Trash2 } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import Toast from '../components/shared/Toast';
 
 export default function Users() {
@@ -215,9 +216,10 @@ export default function Users() {
             </div>
 
             {/* Modal Tambah User */}
+            {createPortal(
             <AnimatePresence>
                 {showModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
                         <motion.div 
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -314,6 +316,7 @@ export default function Users() {
                     </div>
                 )}
             </AnimatePresence>
+            , document.body)}
 
             <Toast show={toast.show} message={toast.message} type={toast.type} onClose={() => setToast(prev => ({ ...prev, show: false }))} />
         </div>

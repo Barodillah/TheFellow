@@ -11,10 +11,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
 // Pengaturan koneksi database
-$db_host = '153.92.15.23'; // Sesuaikan jika menggunakan host berbeda
-$db_name = 'u444914729_thefellow'; // Ganti dengan nama database Anda
-$db_user = 'u444914729_fellow'; // Ganti dengan username database Anda
-$db_pass = 'Fellow.666'; // Ganti dengan password database Anda
+$db_host = ''; // Sesuaikan jika menggunakan host berbeda
+$db_name = ''; // Ganti dengan nama database Anda
+$db_user = ''; // Ganti dengan username database Anda
+$db_pass = ''; // Ganti dengan password database Anda
 
 try {
     $dsn = "mysql:host=$db_host;dbname=$db_name;charset=utf8mb4";

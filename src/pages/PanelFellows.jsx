@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Award, MessageSquare, Briefcase, Search } from 'lucide-react';
+import { ChevronRight, Award, MessageSquare, Briefcase, Search, BookOpen } from 'lucide-react';
 import Toast from '../components/shared/Toast';
 
 export default function PanelFellows() {
@@ -72,13 +72,13 @@ export default function PanelFellows() {
                                 <div className="flex items-center justify-between">
                                     <div className="flex gap-1.5">
                                         <div className="flex items-center gap-1 text-[10px] font-bold text-primary bg-accent px-1.5 py-0.5 rounded">
-                                            <Award className="w-2.5 h-2.5" /> 0
+                                            <BookOpen className="w-2.5 h-2.5" /> {user.stats_publikasi ?? user.stats_articles ?? 0}
                                         </div>
                                         <div className="flex items-center gap-1 text-[10px] font-bold text-white bg-white/20 px-1.5 py-0.5 rounded">
-                                            <MessageSquare className="w-2.5 h-2.5" /> 0
+                                            <MessageSquare className="w-2.5 h-2.5" /> {user.stats_threads || 0}
                                         </div>
                                         <div className="flex items-center gap-1 text-[10px] font-bold text-white bg-white/20 px-1.5 py-0.5 rounded">
-                                            <Briefcase className="w-2.5 h-2.5" /> 0
+                                            <Briefcase className="w-2.5 h-2.5" /> {user.stats_pdca_cases || 0}
                                         </div>
                                     </div>
                                     <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white transform group-hover:rotate-[-45deg] transition-all duration-300">

@@ -3,15 +3,13 @@ import { Shield, ArrowRight, Calendar, User, RefreshCcw, HeartHandshake, BookOpe
 import { Link } from 'react-router-dom';
 import DecorativeRule from '../components/shared/DecorativeRule';
 
-import { BLOG_ARTICLES_DATA } from '../data/mockData';
 
-// Take the latest 3 articles for the home page
-const recentArticles = BLOG_ARTICLES_DATA.slice(0, 3);
 
 export default function Home() {
     const sliderRef = useRef(null);
     const [isHovered, setIsHovered] = useState(false);
     const [dbFellows, setDbFellows] = useState([]);
+    const [recentPublikasi, setRecentPublikasi] = useState([]);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -27,6 +25,20 @@ export default function Home() {
             }
         };
         fetchUsers();
+
+        const fetchPublikasi = async () => {
+            try {
+                const res = await fetch(`${import.meta.env.BASE_URL}api/get_publikasi.php`);
+                const data = await res.json();
+                if (data.status === 'success') {
+                    const publicDocs = data.data.filter(p => p.status === 'publish' && p.visibility === 'public');
+                    setRecentPublikasi(publicDocs.slice(0, 3));
+                }
+            } catch (err) {
+                console.error("Gagal memuat publikasi", err);
+            }
+        };
+        fetchPublikasi();
     }, []);
 
     // Create an infinite loop array by duplicating the data
@@ -188,48 +200,50 @@ export default function Home() {
             <section className="py-20 px-4 max-w-7xl mx-auto border-t border-accent/20">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12">
                     <div>
-                        <span className="text-xs font-bold uppercase tracking-widest text-accent mb-2 block">Wawasan Intelektual</span>
-                        <h2 className="font-serif text-3xl sm:text-4xl font-bold text-primary">Berita & Artikel</h2>
+                        <span className="text-xs font-bold uppercase tracking-widest text-accent mb-2 block">Pusat Literatur</span>
+                        <h2 className="font-serif text-3xl sm:text-4xl font-bold text-primary">Publikasi Terbaru</h2>
                     </div>
-                    <Link to="/articles" className="group flex items-center gap-2 text-primary font-bold text-sm hover:text-accent transition-colors mt-4 sm:mt-0">
-                        <span>Lihat Semua Jurnal</span>
+                    <Link to="/publikasi" className="group flex items-center gap-2 text-primary font-bold text-sm hover:text-accent transition-colors mt-4 sm:mt-0">
+                        <span>Lihat Semua Publikasi</span>
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {recentArticles.map(article => (
-                        <div key={article.id} className="bg-surface-card rounded-xl border border-accent/20 shadow-lg overflow-hidden group cursor-pointer hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col">
-                            <div className="relative h-56 overflow-hidden">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                    {recentPublikasi.map(pub => (
+                        <div key={pub.id} className="group bg-surface-card border border-accent/20 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 flex flex-col transform hover:-translate-y-2">
+                            <div className="h-64 overflow-hidden relative">
                                 <div className="absolute inset-0 bg-primary/20 group-hover:bg-transparent transition-colors duration-500 z-10"></div>
-                                <img src={article.image} alt={article.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
-                                <div className="absolute top-4 left-4 z-20">
-                                    <span className="bg-accent text-primary text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded shadow-md">
-                                        {article.category}
-                                    </span>
+                                <img src={`${import.meta.env.BASE_URL}${pub.coverImg.substring(1)}`} alt={pub.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
+                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-primary/90 to-transparent p-4 z-20">
+                                    <BookOpen className="w-6 h-6 text-accent mb-2" />
                                 </div>
                             </div>
 
                             <div className="p-6 flex flex-col flex-grow">
-                                <div className="flex items-center gap-4 text-[11px] text-slate-500 mb-3 font-semibold uppercase tracking-wide">
-                                    <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-accent" /> {article.date}</span>
-                                    <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5 text-accent" /> {article.author}</span>
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">
+                                        {pub.category}
+                                    </span>
+                                    <span className="flex items-center gap-1.5 text-[11px] font-bold text-accent uppercase tracking-wider">
+                                        <User className="w-3.5 h-3.5" /> {pub.author}
+                                    </span>
                                 </div>
 
-                                <h3 className="font-serif text-lg font-bold text-primary leading-tight mb-3 group-hover:text-accent transition-colors duration-200 line-clamp-2">
-                                    {article.title}
+                                <h3 className="font-serif text-xl font-bold text-primary leading-tight mb-3 group-hover:text-accent transition-colors duration-200 line-clamp-2">
+                                    {pub.title}
                                 </h3>
 
-                                <p className="font-sans text-sm text-slate-600 leading-relaxed mb-6 line-clamp-3">
-                                    {article.excerpt}
+                                <p className="font-sans text-sm text-slate-600 leading-relaxed mb-6 flex-grow line-clamp-3">
+                                    {pub.description}
                                 </p>
 
-                                <div className="mt-auto pt-4 border-t border-accent/10 flex items-center justify-between">
-                                    <span className="text-xs font-bold text-primary group-hover:text-accent transition-colors">Baca Selengkapnya</span>
-                                    <div className="w-8 h-8 rounded-full bg-primary-light/50 flex items-center justify-center group-hover:bg-accent transition-colors">
+                                <Link to="/publikasi" className="mt-auto pt-4 border-t border-accent/10 flex items-center justify-between group-hover:border-accent/30 transition-colors">
+                                    <span className="text-xs font-bold text-primary group-hover:text-accent transition-colors">Lihat Detail</span>
+                                    <div className="w-8 h-8 rounded-full bg-primary-light/30 flex items-center justify-center group-hover:bg-accent transition-colors shadow-sm">
                                         <ArrowRight className="w-4 h-4 text-primary" />
                                     </div>
-                                </div>
+                                </Link>
                             </div>
                         </div>
                     ))}
