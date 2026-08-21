@@ -131,6 +131,13 @@ export const THREADS_DATA = [
         createdAt: "2026-06-25T09:30:00Z",
         tags: ["empathy", "handling", "emotional-customer"],
         content: "Rekan-rekan Fellow, belakangan ini kami mendapati kenaikan arus kunjungan servis yang berdampak pada antrean. Beberapa customer menunjukkan tanda-tanda frustrasi. Bagaimana taktik konkret Anda untuk mengembalikan ketenangan mereka sebelum memulai proses dialog standardisasi? Saya pribadi menyarankan teknik '3-Detik Jeda Hening' untuk menyelaraskan napas dengan customer.",
+        linkMetadata: {
+            url: "https://example.com/handling-emotional-customers",
+            domain: "example.com",
+            title: "5 Proven Tactics for Handling Emotional Customers",
+            description: "Learn how to de-escalate tense situations and bring calm to your service center with these 5 practical steps.",
+            image: "https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=800&auto=format&fit=crop"
+        },
         repliesCount: 4,
         likes: 28,
         views: 340,
@@ -183,6 +190,46 @@ export const THREADS_DATA = [
         likes: 35,
         views: 412,
         comments: []
+    }
+];
+
+export const REPLIES_DATA = [
+    {
+        id: "c-1",
+        threadId: "t-001",
+        authorId: "f-001",
+        createdAt: "2026-06-25T11:00:00Z",
+        content: "Sangat setuju, Consigliere Sirojudin. Di Jawa Barat, kami menerapkan 'Welcome Drink Aromaterapi' hangat begitu customer mulai menunjukkan nada bicara tinggi. Kehangatan fisik terbukti menurunkan hormon stres secara instan.",
+        likes: 12,
+        replies: [
+            {
+                id: "c-1-1",
+                threadId: "t-001",
+                authorId: "f-003",
+                createdAt: "2026-06-25T11:30:00Z",
+                content: "Ide yang brilian! Apakah ada preferensi aroma tertentu yang paling efektif menurunkan tensi menurut pengalaman Anda?",
+                likes: 5,
+                replies: []
+            }
+        ]
+    },
+    {
+        id: "c-2",
+        threadId: "t-001",
+        authorId: "f-004",
+        createdAt: "2026-06-25T14:15:00Z",
+        content: "Menambahkan dari lapangan, kami melatih tim frontliner untuk langsung menurunkan posisi berdiri agar sejajar atau sedikit di bawah tinggi mata customer yang sedang duduk. Gestur ini meredakan dominasi konfrontasional.",
+        likes: 15,
+        replies: []
+    },
+    {
+        id: "c-3",
+        threadId: "t-002",
+        authorId: "f-005",
+        createdAt: "2026-06-18T16:30:00Z",
+        content: "Sebagai Waycrafter, saya sedang merumuskan e-Handover Toolkit. Setiap detail ritual pengiriman direkam digital agar konsisten di diler cabang mana pun.",
+        likes: 8,
+        replies: []
     }
 ];
 

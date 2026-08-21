@@ -9,6 +9,7 @@ import Home from './pages/Home';
 import Fellows from './pages/Fellows';
 import Profile from './pages/Profile';
 import Forum from './pages/Forum';
+import ThreadDetail from './pages/ThreadDetail';
 import Articles from './pages/Articles';
 import PDCA from './pages/PDCA';
 import HOMEStandard from './pages/HOMEStandard';
@@ -38,6 +39,7 @@ function App() {
           <Route path="/fellows" element={<Fellows />} />
           <Route path="/fellows/:id" element={<Profile />} />
           <Route path="/forum" element={<Forum />} />
+          <Route path="/forum/:id" element={<ThreadDetail />} />
           <Route path="/articles" element={<Articles />} />
           <Route path="/pdca" element={<PDCA />} />
           <Route path="/home-standard" element={<HOMEStandard />} />

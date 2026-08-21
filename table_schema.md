@@ -66,3 +66,42 @@ Tabel untuk menyimpan tag yang terkait dengan publikasi.
 - `id` (INT AUTO_INCREMENT, Primary Key)
 - `publikasi_id` (INT, Foreign Key ke tabel `publikasi`) - ID publikasi terkait.
 - `tag_name` (VARCHAR(50)) - Nama tag.
+
+### 6. Tabel `forum_threads`
+Tabel untuk menyimpan diskusi utama. Menggunakan UUID untuk kemudahan integrasi dan keamanan.
+- `id` (CHAR(36), Primary Key) - Menyimpan UUID.
+- `author_id` (CHAR(36), Foreign Key ke tabel `users`) - Pembuat thread.
+- `category` (VARCHAR(50)) - Kategori topik (contoh: 'Diskusi PDCA', 'General', 'Q&A').
+- `title` (VARCHAR(255)) - Judul diskusi.
+- `content` (TEXT) - Isi lengkap diskusi.
+- `link_metadata` (JSON, Nullable) - Menyimpan meta dari link yang di-share (url, title, description, image, domain).
+- `likes_count` (INT) - Counter jumlah like (Denormalisasi).
+- `views_count` (INT) - Counter jumlah tayangan (Denormalisasi).
+- `replies_count` (INT) - Counter jumlah balasan (Denormalisasi).
+- `created_at` (TIMESTAMP)
+- `updated_at` (TIMESTAMP)
+
+### 7. Tabel `forum_thread_tags`
+Tabel relasi many-to-many untuk hashtag diskusi.
+- `id` (INT AUTO_INCREMENT, Primary Key)
+- `thread_id` (CHAR(36), Foreign Key ke tabel `forum_threads`) - Diskusi terkait.
+- `tag_name` (VARCHAR(50)) - Tag diskusi.
+
+### 8. Tabel `forum_replies`
+Tabel untuk memuat balasan diskusi. Mensuport fitur balasan bersarang (nested replies) secara tidak terbatas melalui relasi `parent_id` (Self-Referencing).
+- `id` (CHAR(36), Primary Key) - Menyimpan UUID.
+- `thread_id` (CHAR(36), Foreign Key ke tabel `forum_threads`) - Diskusi referensi.
+- `author_id` (CHAR(36), Foreign Key ke tabel `users`) - Pembuat balasan.
+- `parent_id` (CHAR(36), Nullable, Foreign Key ke tabel `forum_replies`) - ID balasan induk (jika ini membalas sebuah komentar).
+- `content` (TEXT) - Isi balasan.
+- `likes_count` (INT) - Counter jumlah like pada balasan ini (Denormalisasi).
+- `created_at` (TIMESTAMP)
+- `updated_at` (TIMESTAMP)
+
+### 9. Tabel `forum_likes`
+Tabel relasional (Pivot) untuk mencegah pengguna melakukan like lebih dari satu kali pada entitas yang sama.
+- `user_id` (CHAR(36), Foreign Key ke tabel `users`) - Pengguna yang me-like.
+- `entity_id` (CHAR(36)) - ID entitas yang di-like (ID Thread atau ID Reply).
+- `entity_type` (ENUM: 'thread', 'reply') - Menandakan apakah yang di-like adalah thread utama atau balasan.
+- `created_at` (TIMESTAMP)
+- *Primary Key* digabungkan (Composite) dari: `user_id`, `entity_id`, dan `entity_type`.

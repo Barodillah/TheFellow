@@ -65,3 +65,52 @@ CREATE TABLE publikasi_tags (
     tag_name VARCHAR(50) NOT NULL,
     FOREIGN KEY (publikasi_id) REFERENCES publikasi(id) ON DELETE CASCADE
 );
+
+-- 6. Membuat tabel forum_threads
+CREATE TABLE forum_threads (
+    id CHAR(36) PRIMARY KEY,
+    author_id CHAR(36) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    link_metadata JSON NULL,
+    likes_count INT DEFAULT 0,
+    views_count INT DEFAULT 0,
+    replies_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- 7. Membuat tabel forum_thread_tags
+CREATE TABLE forum_thread_tags (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    thread_id CHAR(36) NOT NULL,
+    tag_name VARCHAR(50) NOT NULL,
+    FOREIGN KEY (thread_id) REFERENCES forum_threads(id) ON DELETE CASCADE
+);
+
+-- 8. Membuat tabel forum_replies (Dengan Self-Referencing parent_id)
+CREATE TABLE forum_replies (
+    id CHAR(36) PRIMARY KEY,
+    thread_id CHAR(36) NOT NULL,
+    author_id CHAR(36) NOT NULL,
+    parent_id CHAR(36) NULL,
+    content TEXT NOT NULL,
+    likes_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (thread_id) REFERENCES forum_threads(id) ON DELETE CASCADE,
+    FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_id) REFERENCES forum_replies(id) ON DELETE CASCADE
+);
+
+-- 9. Membuat tabel forum_likes
+CREATE TABLE forum_likes (
+    user_id CHAR(36) NOT NULL,
+    entity_id CHAR(36) NOT NULL,
+    entity_type ENUM('thread', 'reply') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, entity_id, entity_type),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
