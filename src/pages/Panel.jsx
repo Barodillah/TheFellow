@@ -12,21 +12,101 @@ import {
     Plus,
     Bell
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Panel() {
+    const navigate = useNavigate();
     const [user, setUser] = useState(null);
+    const [recentProjects, setRecentProjects] = useState([]);
+    const [activeQuiz, setActiveQuiz] = useState(null);
+    const [totalPoints, setTotalPoints] = useState(0);
+    const [currentTime, setCurrentTime] = useState(new Date());
+    const [recentSubmissions, setRecentSubmissions] = useState([]);
 
     useEffect(() => {
         const userData = localStorage.getItem('csm_user');
         if (userData) {
             setUser(JSON.parse(userData));
         }
+
+        const projects = JSON.parse(localStorage.getItem('pdca_projects_list') || '[]');
+        setRecentProjects(projects.slice(0, 4));
+
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+
+        return () => clearInterval(timer);
     }, []);
+
+    useEffect(() => {
+        if (!user?.id) return;
+        
+        const fetchQuizzes = async () => {
+            try {
+                const response = await fetch(`https://incsmsociety.site/api/get_quizzes.php?user_id=${user.id}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Kalkulasi poin intelektual
+                    const points = result.data.reduce((sum, q) => sum + (q.isCompleted ? Number(q.userScore) : 0), 0);
+                    setTotalPoints(points);
+
+                    // Cari 1 kuis aktif (prioritaskan yang belum dikerjakan)
+                    const activeQuizzes = result.data.filter(q => q.status === 'active');
+                    const pendingQuiz = activeQuizzes.find(q => !q.isCompleted) || activeQuizzes[0];
+                    setActiveQuiz(pendingQuiz || null);
+                }
+            } catch (err) {
+                console.error("Gagal memuat kuis di Panel:", err);
+            }
+
+            try {
+                const res = await fetch(`https://incsmsociety.site/api/get_recent_submissions.php`);
+                const result = await res.json();
+                if (result.success) {
+                    setRecentSubmissions(result.data);
+                }
+            } catch (err) {
+                console.error("Gagal memuat riwayat submission:", err);
+            }
+        };
+
+        fetchQuizzes();
+    }, [user?.id]);
+
+    const getProgress = (proj) => {
+        if (!proj.actionPlans || proj.actionPlans.length === 0) return 0;
+        const done = proj.actionPlans.filter(a => a.status === 'done').length;
+        return Math.round((done / proj.actionPlans.length) * 100);
+    };
+
+    const formatCountdown = (deadlineStr) => {
+        if (!deadlineStr) return '-';
+        const target = new Date(deadlineStr.replace(' ', 'T') + 'Z');
+        const diff = target - currentTime;
+        
+        if (diff <= 0) return 'Tenggat Berlalu';
+        
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const mins = Math.floor((diff / 1000 / 60) % 60);
+        const secs = Math.floor((diff / 1000) % 60);
+        
+        let result = [];
+        if (days > 0) result.push(`${days} Hari`);
+        if (hours > 0 || days > 0) result.push(`${hours}j`);
+        if (mins > 0 || hours > 0 || days > 0) result.push(`${mins}m`);
+        result.push(`${secs}d`);
+        
+        return result.join(' ');
+    };
+
     const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
+        hidden: { opacity: 0, y: 20 },
+        visible: { 
+            opacity: 1, 
+            y: 0,
             transition: { staggerChildren: 0.1 }
         }
     };
@@ -48,7 +128,7 @@ export default function Panel() {
                     <p className="text-gray-500 text-sm">Lihat ringkasan aktivitas dan progres Anda di sini.</p>
                 </div>
                 <div className="flex items-center space-x-3">
-                    <Link to="/pdca" className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-lg shadow-primary/20">
+                    <Link to="/pdca-generator" className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-lg shadow-primary/20">
                         <Plus className="w-4 h-4" />
                         <span>Buat PDCA Baru</span>
                     </Link>
@@ -88,7 +168,7 @@ export default function Panel() {
                             </div>
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-500">Poin Intelektual</span>
-                                <span className="font-medium text-gray-800">1,250 pts</span>
+                                <span className="font-medium text-gray-800">{totalPoints} pts</span>
                             </div>
                         </div>
                     </div>
@@ -103,101 +183,138 @@ export default function Panel() {
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="font-bold text-gray-800 flex items-center space-x-2">
                             <Target className="w-5 h-5 text-primary" />
-                            <span>Ringkasan PDCA Tracker</span>
+                            <span>PDCA Tracker Terbaru</span>
                         </h3>
-                        <Link to="/pdca" className="text-xs text-accent hover:text-accent-light font-semibold">Lihat Detail</Link>
+                        <Link to="/pdca" className="text-xs text-accent hover:text-accent-light font-semibold">Lihat Semua</Link>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
-                            <div className="text-blue-500 mb-2 font-medium text-sm">Plan</div>
-                            <div className="text-2xl font-bold text-gray-800">12</div>
-                            <div className="text-xs text-gray-500 mt-1">Ide Inisiatif</div>
+                    {recentProjects.length === 0 ? (
+                        <div className="text-center py-8">
+                            <p className="text-gray-500 text-sm">Belum ada proyek PDCA.</p>
+                            <Link to="/pdca-generator" className="text-blue-500 hover:underline text-xs mt-2 inline-block">Buat sekarang</Link>
                         </div>
-                        <div className="bg-amber-50/50 p-4 rounded-2xl border border-amber-100">
-                            <div className="text-amber-500 mb-2 font-medium text-sm">Do</div>
-                            <div className="text-2xl font-bold text-gray-800">5</div>
-                            <div className="text-xs text-gray-500 mt-1">Sedang Berjalan</div>
+                    ) : (
+                        <div className="space-y-4">
+                            {recentProjects.map(proj => {
+                                const progress = getProgress(proj);
+                                return (
+                                    <div 
+                                        key={proj.id} 
+                                        onClick={() => navigate('/pdca', { state: { openProjectId: proj.id } })}
+                                        className="bg-gray-50 border border-gray-100 p-4 rounded-2xl flex flex-col md:flex-row md:items-center gap-4 hover:border-blue-200 transition-colors cursor-pointer"
+                                    >
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${proj.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                                                    {proj.status === 'completed' ? 'Selesai' : 'Aktif'}
+                                                </span>
+                                                <span className="text-xs text-gray-400">{new Date(proj.dateCreated).toLocaleDateString('id-ID')}</span>
+                                            </div>
+                                            <h4 className="font-semibold text-gray-800 text-sm truncate">{proj.problem}</h4>
+                                        </div>
+                                        <div className="w-full md:w-32 shrink-0">
+                                            <div className="flex justify-between text-xs mb-1">
+                                                <span className="text-gray-500 font-medium">Progres</span>
+                                                <span className="font-bold text-gray-800">{progress}%</span>
+                                            </div>
+                                            <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                                <div className={`h-1.5 rounded-full ${progress === 100 ? 'bg-green-500' : 'bg-blue-500'}`} style={{ width: `${progress}%` }}></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
-                        <div className="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">
-                            <div className="text-indigo-500 mb-2 font-medium text-sm">Check</div>
-                            <div className="text-2xl font-bold text-gray-800">3</div>
-                            <div className="text-xs text-gray-500 mt-1">Menunggu Evaluasi</div>
-                        </div>
-                        <div className="bg-green-50/50 p-4 rounded-2xl border border-green-100">
-                            <div className="text-green-500 mb-2 font-medium text-sm flex items-center justify-between">
-                                Act <TrendingUp className="w-3.5 h-3.5" />
-                            </div>
-                            <div className="text-2xl font-bold text-gray-800">8</div>
-                            <div className="text-xs text-gray-500 mt-1">Selesai & Standar</div>
-                        </div>
-                    </div>
+                    )}
                 </motion.div>
 
-                {/* Standar H.O.M.E Progress */}
-                <motion.div variants={itemVariants} className="bg-primary rounded-3xl p-6 shadow-md lg:col-span-1 text-white relative overflow-hidden">
+                <motion.div variants={itemVariants} className="bg-primary rounded-3xl p-6 shadow-md lg:col-span-1 text-white relative overflow-hidden flex flex-col justify-between">
                     <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white opacity-5 rounded-full blur-2xl"></div>
-                    <h3 className="font-bold flex items-center space-x-2 mb-2">
-                        <Award className="w-5 h-5 text-accent" />
-                        <span>Quiz Intelectual</span>
-                    </h3>
-                    <p className="text-xs text-gray-300 mb-6">Pemahaman standar layanan</p>
-
-                    <div className="flex items-end space-x-2 mb-2">
-                        <span className="text-4xl font-serif font-bold text-accent">92</span>
-                        <span className="text-sm text-gray-400 mb-1">/ 100</span>
+                    <div>
+                        <h3 className="font-bold flex items-center space-x-2 mb-2">
+                            <Award className="w-5 h-5 text-accent" />
+                            <span>Kuis Aktif (Wajib)</span>
+                        </h3>
+                        {activeQuiz ? (
+                            <>
+                                <p className="text-sm text-white mb-1 font-bold line-clamp-2">{activeQuiz.title}</p>
+                                <p className="text-xs text-gray-300 mb-4 line-clamp-3">{activeQuiz.description}</p>
+                                
+                                <div className={`flex flex-col gap-2 mb-4 p-3 rounded-lg border ${activeQuiz.isCompleted ? 'bg-green-500/20 border-green-400/30' : 'bg-black/20 border-white/10'}`}>
+                                    <div className="flex items-center gap-2 text-xs text-gray-200">
+                                        <Clock className={`w-4 h-4 shrink-0 ${activeQuiz.isCompleted ? 'text-green-400' : 'text-accent'}`} />
+                                        <span>
+                                            {activeQuiz.isCompleted 
+                                                ? `Selesai: ${activeQuiz.submitted_at ? new Date(activeQuiz.submitted_at.replace(' ', 'T') + 'Z').toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}`
+                                                : `Batas: ${activeQuiz.deadline ? new Date(activeQuiz.deadline.replace(' ', 'T') + 'Z').toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}`
+                                            }
+                                        </span>
+                                    </div>
+                                    <div className={`text-xs font-bold ${activeQuiz.isCompleted ? 'text-green-400' : 'text-accent'}`}>
+                                        {activeQuiz.isCompleted ? 'Telah Dikerjakan' : `Sisa: ${formatCountdown(activeQuiz.deadline)}`}
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <p className="text-xs text-gray-300 mb-4 line-clamp-3">Luar biasa! Tidak ada kuis wajib saat ini.</p>
+                        )}
                     </div>
 
-                    <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
-                        <div className="bg-accent h-2 rounded-full" style={{ width: '92%' }}></div>
-                    </div>
-
-                    <Link to="/quiz" className="inline-block mt-2 text-xs font-semibold bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-colors border border-white/10">
-                        Ikuti Quiz Ulang
-                    </Link>
+                    {activeQuiz ? (
+                        <Link 
+                            to={`/kanal-quiz/take/${activeQuiz.id}`} 
+                            className={`inline-block mt-4 text-xs font-semibold px-4 py-2 rounded-lg transition-colors border text-center w-full ${activeQuiz.isCompleted ? 'bg-orange-500 hover:bg-orange-600 text-white border-orange-500' : 'bg-white/10 hover:bg-white/20 text-white border-white/10'}`}
+                        >
+                            {activeQuiz.isCompleted ? 'Kerjakan Lagi' : 'Kerjakan Sekarang'}
+                        </Link>
+                    ) : (
+                        <Link to="/kanal-quiz" className="inline-block mt-4 text-xs font-semibold bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-colors border border-white/10 text-center w-full">
+                            Lihat Riwayat Kuis
+                        </Link>
+                    )}
                 </motion.div>
 
-                {/* Recent Forum Activity */}
+                {/* Recent Submissions */}
                 <motion.div variants={itemVariants} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 lg:col-span-2">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="font-bold text-gray-800 flex items-center space-x-2">
-                            <MessageSquare className="w-5 h-5 text-primary" />
-                            <span>Aktivitas Forum Terbaru</span>
+                            <Target className="w-5 h-5 text-primary" />
+                            <span>Penyelesaian Kuis Terbaru</span>
                         </h3>
-                        <Link to="/forum" className="text-xs text-accent hover:text-accent-light font-semibold">Ke Forum</Link>
+                        <Link to="/kanal-quiz" className="text-xs text-accent hover:text-accent-light font-semibold">Lihat Semua Kuis</Link>
                     </div>
 
-                    <div className="space-y-4">
-                        {/* Item 1 */}
-                        <div className="flex items-start space-x-4 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-gray-100">
-                            <div className="w-10 h-10 rounded-full bg-accent/10 flex-shrink-0 flex items-center justify-center text-accent">
-                                <User className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h4 className="text-sm font-semibold text-gray-800 truncate">Implementasi AI dalam Pelayanan</h4>
-                                <p className="text-xs text-gray-500 truncate">Apakah ada yang sudah mencoba implementasi chatbot AI untuk pilar H (Helpful)...</p>
-                            </div>
-                            <div className="flex items-center text-xs text-gray-400 space-x-1 flex-shrink-0">
-                                <Clock className="w-3 h-3" />
-                                <span>2 jam lalu</span>
-                            </div>
+                    {recentSubmissions.length === 0 ? (
+                        <p className="text-xs text-gray-400">Belum ada aktivitas kuis terbaru.</p>
+                    ) : (
+                        <div className="space-y-4">
+                            {recentSubmissions.slice(0, 3).map((sub, i) => {
+                                const submittedTime = new Date(sub.submitted_at.replace(' ', 'T') + 'Z');
+                                const now = new Date();
+                                const diffHrs = Math.floor((now - submittedTime) / (1000 * 60 * 60));
+                                const timeStr = diffHrs < 24 ? (diffHrs === 0 ? 'Baru saja' : `${diffHrs} jam lalu`) : `${Math.floor(diffHrs / 24)} hari lalu`;
+                                
+                                return (
+                                    <div key={i} className="flex items-start space-x-4 p-3 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
+                                        <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-200">
+                                            <img src={sub.avatar || 'https://incsmsociety.site/uploads/avatar/default.jpg'} alt={sub.name} className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="text-sm font-semibold text-gray-800 truncate">{sub.name}</h4>
+                                            <p className="text-xs text-gray-500 truncate">Menyelesaikan: <span className="font-medium text-gray-700">{sub.quiz_title}</span></p>
+                                        </div>
+                                        <div className="flex flex-col items-end flex-shrink-0">
+                                            <span className="text-xs font-bold text-green-600 mb-1">{sub.score} Pts</span>
+                                            <div className="flex items-center text-[10px] text-gray-400 space-x-1">
+                                                <Clock className="w-3 h-3" />
+                                                <span>{timeStr}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
-
-                        {/* Item 2 */}
-                        <div className="flex items-start space-x-4 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-gray-100">
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex-shrink-0 flex items-center justify-center text-primary">
-                                <CheckCircle2 className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h4 className="text-sm font-semibold text-gray-800 truncate">Strategi Meminimalisir Antrian</h4>
-                                <p className="text-xs text-gray-500 truncate">Saya menemukan solusi untuk PDCA tentang antrian panjang di jam sibuk, silakan cek...</p>
-                            </div>
-                            <div className="flex items-center text-xs text-gray-400 space-x-1 flex-shrink-0">
-                                <Clock className="w-3 h-3" />
-                                <span>Kemarin</span>
-                            </div>
-                        </div>
-                    </div>
+                    )}
                 </motion.div>
 
             </motion.div>

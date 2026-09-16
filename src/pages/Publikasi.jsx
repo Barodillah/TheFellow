@@ -309,7 +309,7 @@ export default function Publikasi() {
                                 </button>
                             </div>
                             
-                            {selectedDoc.visibility === 'public' || localStorage.getItem('csm_user') ? (
+                            {localStorage.getItem('csm_user') && JSON.parse(localStorage.getItem('csm_user'))?.role === 'admin' ? (
                                 <a 
                                     href={`${import.meta.env.BASE_URL}${selectedDoc.fileUrl.substring(1)}`} 
                                     download 

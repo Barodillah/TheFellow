@@ -79,7 +79,7 @@ export default function Header() {
                         {/* News Dropdown */}
                         <div className="relative group">
                             <button className="flex items-center space-x-1 text-sm font-medium text-gray-300 hover:text-accent transition duration-200 py-2">
-                                <span>News</span>
+                                <span>News & Tool's</span>
                                 <ChevronDown className="w-4 h-4" />
                             </button>
                             <div className="absolute left-0 mt-0 w-48 bg-surface-card rounded-md shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-accent/20 z-50">
@@ -101,6 +101,12 @@ export default function Header() {
                                 >
                                     <span>Smart Library</span>
                                     <span className="text-[10px] bg-accent text-primary px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ml-2">AI</span>
+                                </Link>
+                                <Link
+                                    to="/whatsapp-blast"
+                                    className={`block px-4 py-2 text-sm hover:bg-surface-warm transition-colors ${isActive('/whatsapp-blast') ? 'text-accent font-bold' : 'text-primary'}`}
+                                >
+                                    WhatsApp Blast
                                 </Link>
                             </div>
                         </div>

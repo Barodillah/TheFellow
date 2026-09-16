@@ -14,14 +14,25 @@ import {
     Search,
     Bell,
     X,
-    BookOpen
+    BookOpen,
+    HelpCircle,
+    ChevronDown,
+    ChevronRight
 } from 'lucide-react';
 
 export default function PanelLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
+    const [openDropdowns, setOpenDropdowns] = useState({});
     const location = useLocation();
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
+
+    const toggleDropdown = (label) => {
+        setOpenDropdowns(prev => ({
+            ...prev,
+            [label]: !prev[label]
+        }));
+    };
 
     useEffect(() => {
         const userData = localStorage.getItem('csm_user');
@@ -46,15 +57,28 @@ export default function PanelLayout() {
 
     const sidebarLinks = [
         { icon: LayoutDashboard, label: 'Overview', path: '/panel' },
-        { icon: Target, label: 'PDCA Tracker', path: '/pdca' },
+        {
+            icon: Target,
+            label: 'Tools CSM',
+            submenu: [
+                { label: 'PDCA Generator', path: '/pdca-generator' },
+                { label: 'PDCA Tracker', path: '/pdca' },
+                { label: 'Activity Report', path: 'https://labsen.bewhy.id' },
+                { label: 'Calculator Target', path: '/calculator-target' },
+                { label: 'AI Roleplay', path: 'https://wai.bewhy.id' },
+                { label: 'One Link Quesioner', path: '/one-link-quesioner' },
+                { label: 'CSM Labs', path: '/smart-library' },
+                { label: 'Whatsapp Blast', path: '/whatsapp-blast' },
+            ]
+        },
         { icon: MessageSquare, label: 'Forum Diskusi', path: '/forum' },
+        { icon: HelpCircle, label: 'Kanal Quiz', path: '/kanal-quiz' },
         { icon: Users, label: 'Direktori Fellow', path: '/directory' },
         { icon: Award, label: 'Standar H.O.M.E', path: '/home-standard' },
         { divider: true },
         { icon: User, label: 'Profil Saya', path: '/profile' },
         { icon: Trophy, label: 'Achievements', path: '/achievements' },
         { icon: BookOpen, label: 'Publikasi', path: '/manage-publikasi' },
-        { icon: Settings, label: 'Pengaturan', path: '/settings' },
         ...(user?.role === 'admin' ? [{ icon: Users, label: 'Users', path: '/users' }] : [])
     ];
 
@@ -68,10 +92,10 @@ export default function PanelLayout() {
 
     return (
         <div className="flex h-screen bg-surface-warm overflow-hidden text-slate-800 font-sans antialiased">
-            
+
             {/* Mobile Overlay */}
             {sidebarOpen && (
-                <div 
+                <div
                     className="fixed inset-0 bg-gray-900/50 z-40 lg:hidden backdrop-blur-sm"
                     onClick={() => setSidebarOpen(false)}
                 />
@@ -109,6 +133,73 @@ export default function PanelLayout() {
                             }
 
                             const Icon = link.icon;
+
+                            if (link.submenu) {
+                                const isOpen = openDropdowns[link.label];
+                                const isActive = link.submenu.some(sub => location.pathname === sub.path || location.pathname.startsWith(sub.path + '/'));
+
+                                return (
+                                    <div key={index} className="space-y-1">
+                                        <button
+                                            onClick={() => {
+                                                if (!sidebarOpen) setSidebarOpen(true);
+                                                toggleDropdown(link.label);
+                                            }}
+                                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group relative
+                                                ${isActive
+                                                    ? 'bg-accent/10 text-accent font-semibold shadow-sm'
+                                                    : 'text-gray-500 hover:bg-surface-warm hover:text-primary'}`}
+                                        >
+                                            <div className="flex items-center">
+                                                <Icon className={`w-5 h-5 ${isActive ? 'text-accent' : 'text-gray-400 group-hover:text-primary'} ${!sidebarOpen && 'mx-auto'}`} />
+                                                {sidebarOpen && (
+                                                    <span className="ml-3 text-sm truncate">{link.label}</span>
+                                                )}
+                                            </div>
+                                            {sidebarOpen && (
+                                                isOpen ? <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-primary" /> : <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-primary" />
+                                            )}
+                                        </button>
+
+                                        {isOpen && sidebarOpen && (
+                                            <div className="pl-10 pr-3 py-1 space-y-1">
+                                                {link.submenu.map((sub, subIndex) => {
+                                                    const isExternal = sub.path.startsWith('http');
+                                                    if (isExternal) {
+                                                        return (
+                                                            <a
+                                                                key={subIndex}
+                                                                href={sub.path}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className={`flex items-center px-3 py-2 rounded-lg transition-colors text-sm text-gray-500 hover:text-primary hover:bg-surface-warm`}
+                                                            >
+                                                                <div className={`w-1.5 h-1.5 rounded-full mr-2.5 bg-gray-400`} />
+                                                                {sub.label}
+                                                            </a>
+                                                        );
+                                                    }
+                                                    const isSubActive = location.pathname === sub.path;
+                                                    return (
+                                                        <Link
+                                                            key={subIndex}
+                                                            to={sub.path}
+                                                            className={`flex items-center px-3 py-2 rounded-lg transition-colors text-sm
+                                                                ${isSubActive
+                                                                    ? 'text-accent bg-accent/5 font-medium'
+                                                                    : 'text-gray-500 hover:text-primary hover:bg-surface-warm'}`}
+                                                        >
+                                                            <div className={`w-1.5 h-1.5 rounded-full mr-2.5 ${isSubActive ? 'bg-accent' : 'bg-gray-400'}`} />
+                                                            {sub.label}
+                                                        </Link>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
+
                             const isActive = location.pathname === link.path;
                             return (
                                 <Link
@@ -156,7 +247,7 @@ export default function PanelLayout() {
                         </button>
 
                         {/* Mobile Menu Button */}
-                        <button 
+                        <button
                             onClick={() => setSidebarOpen(true)}
                             className="p-2 -ml-2 mr-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
                         >
@@ -183,13 +274,13 @@ export default function PanelLayout() {
 
                         <div className="h-8 w-px bg-gray-200 mx-1 hidden sm:block"></div>
 
-                        <div 
+                        <div
                             onClick={() => navigate('/profile')}
                             className="flex items-center space-x-3 cursor-pointer p-1 pr-2 rounded-full hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
                         >
-                            <img 
-                                src={user?.avatar || 'https://incsmsociety.site/uploads/avatar/default.jpg'} 
-                                alt={user?.name || 'User'} 
+                            <img
+                                src={user?.avatar || 'https://incsmsociety.site/uploads/avatar/default.jpg'}
+                                alt={user?.name || 'User'}
                                 className="w-8 h-8 rounded-full object-cover border border-gray-200 shadow-sm"
                             />
                             <div className="hidden md:block text-left">

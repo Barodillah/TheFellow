@@ -763,13 +763,15 @@ export default function PanelPublikasi() {
                                 </button>
                             </div>
                             
-                            <a 
-                                href={`${import.meta.env.BASE_URL}${selectedDoc.fileUrl.substring(1)}`} 
-                                download 
-                                className="flex items-center gap-1.5 bg-accent/20 hover:bg-accent text-accent hover:text-primary px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-colors whitespace-nowrap"
-                            >
-                                <Download className="w-4 h-4" /> <span className="hidden sm:inline">Unduh PDF</span>
-                            </a>
+                            {user?.role === 'admin' && (
+                                <a 
+                                    href={`${import.meta.env.BASE_URL}${selectedDoc.fileUrl.substring(1)}`} 
+                                    download 
+                                    className="flex items-center gap-1.5 bg-accent/20 hover:bg-accent text-accent hover:text-primary px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-colors whitespace-nowrap"
+                                >
+                                    <Download className="w-4 h-4" /> <span className="hidden sm:inline">Unduh PDF</span>
+                                </a>
+                            )}
 
                             <button onClick={closeDocument} className="hidden sm:block p-2 text-white hover:text-red-400 hover:bg-red-400/20 rounded-lg transition-colors ml-1">
                                 <X className="w-6 h-6" />

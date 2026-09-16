@@ -15,9 +15,13 @@ import PDCA from './pages/PDCA';
 import HOMEStandard from './pages/HOMEStandard';
 import About from './pages/About';
 import Quiz from './pages/Quiz';
+import KanalQuiz from './pages/KanalQuiz';
+import CreateQuiz from './pages/CreateQuiz';
+import TakeQuiz from './pages/TakeQuiz';
 import Prestasi from './pages/Prestasi';
 import Publikasi from './pages/Publikasi';
 import SmartLibrary from './pages/SmartLibrary';
+import WaBlast from './pages/WaBlast';
 import Auth from './pages/Auth';
 import ResetPassword from './pages/ResetPassword';
 import Panel from './pages/Panel';
@@ -27,6 +31,8 @@ import PanelFellows from './pages/PanelFellows';
 import PanelProfileView from './pages/PanelProfileView';
 import PanelAchievements from './pages/PanelAchievements';
 import PanelPublikasi from './pages/PanelPublikasi';
+import CalculatorTarget from './pages/CalculatorTarget';
+import PDCAGenerator from './pages/PDCAGenerator';
 
 function App() {
   return (
@@ -41,13 +47,13 @@ function App() {
           <Route path="/forum" element={<Forum />} />
           <Route path="/forum/:id" element={<ThreadDetail />} />
           <Route path="/articles" element={<Articles />} />
-          <Route path="/pdca" element={<PDCA />} />
           <Route path="/home-standard" element={<HOMEStandard />} />
           <Route path="/about" element={<About />} />
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/prestasi" element={<Prestasi />} />
           <Route path="/publikasi" element={<Publikasi />} />
           <Route path="/smart-library" element={<SmartLibrary />} />
+          <Route path="/whatsapp-blast" element={<WaBlast />} />
           <Route path="/login" element={<Auth />} />
           <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
@@ -55,12 +61,18 @@ function App() {
         {/* Panel (Dashboard) Routes */}
         <Route element={<PanelLayout />}>
           <Route path="/panel" element={<Panel />} />
+          <Route path="/kanal-quiz" element={<KanalQuiz />} />
+          <Route path="/kanal-quiz/create" element={<CreateQuiz />} />
+          <Route path="/kanal-quiz/take/:id" element={<TakeQuiz />} />
           <Route path="/directory" element={<PanelFellows />} />
           <Route path="/directory/:id" element={<PanelProfileView />} />
           <Route path="/profile" element={<MyProfile />} />
           <Route path="/achievements" element={<PanelAchievements />} />
           <Route path="/manage-publikasi" element={<PanelPublikasi />} />
           <Route path="/users" element={<Users />} />
+          <Route path="/calculator-target" element={<CalculatorTarget />} />
+          <Route path="/pdca-generator" element={<PDCAGenerator />} />
+          <Route path="/pdca" element={<PDCA />} />
         </Route>
       </Routes>
     </BrowserRouter>

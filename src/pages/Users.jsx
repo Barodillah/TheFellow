@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, Shield, User, Award, Search, Edit2, Trash2 } from 'lucide-react';
+import { Plus, X, Shield, User, Award, Search, Edit2, Trash2, Eye, CheckCircle } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import Toast from '../components/shared/Toast';
 
@@ -11,6 +11,8 @@ export default function Users() {
     const [showModal, setShowModal] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [editingId, setEditingId] = useState(null);
+    const [previewModal, setPreviewModal] = useState({ show: false, user: null });
+    const [approving, setApproving] = useState(false);
     
     const initialForm = { name: '', email: '', phone: '', role: 'member', title: '', join_year: new Date().getFullYear() };
     const [formData, setFormData] = useState(initialForm);
@@ -104,12 +106,38 @@ export default function Users() {
             const data = await res.json();
             if (data.status === 'success') {
                 showToast(data.message, 'success');
+                if (previewModal.show && previewModal.user?.id === id) {
+                    setPreviewModal({ show: false, user: null });
+                }
                 fetchUsers();
             } else {
                 showToast(data.message || 'Gagal menghapus pengguna', 'error');
             }
         } catch (error) {
             showToast('Kesalahan koneksi saat menghapus', 'error');
+        }
+    };
+
+    const handleApprove = async (id) => {
+        setApproving(true);
+        try {
+            const res = await fetch('https://incsmsociety.site/api/approve_user.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                showToast(data.message, 'success');
+                setPreviewModal({ show: false, user: null });
+                fetchUsers();
+            } else {
+                showToast(data.message || 'Gagal menyetujui pengguna', 'error');
+            }
+        } catch (error) {
+            showToast('Kesalahan koneksi saat menyetujui', 'error');
+        } finally {
+            setApproving(false);
         }
     };
 
@@ -191,20 +219,34 @@ export default function Users() {
                                             </div>
                                         </td>
                                         <td className="p-4">
-                                            <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
-                                                u.has_password ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-orange-50 text-orange-700 border border-orange-200'
-                                            }`}>
-                                                {u.has_password ? 'Aktif' : 'Pending'}
-                                            </span>
+                                            {u.registration_number ? (
+                                                <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
+                                                    u.has_password ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-blue-50 text-blue-700 border border-blue-200'
+                                                }`}>
+                                                    {u.has_password ? 'Aktif' : 'Menunggu Aktivasi'}
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200">
+                                                    Pending Approval
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="p-4 text-right">
                                             <div className="flex items-center justify-end space-x-2">
-                                                <button onClick={() => handleEdit(u)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors" title="Edit">
-                                                    <Edit2 className="w-4 h-4" />
-                                                </button>
-                                                <button onClick={() => handleDelete(u.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors" title="Hapus">
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
+                                                {!u.registration_number ? (
+                                                    <button onClick={() => setPreviewModal({ show: true, user: u })} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="Preview Detail">
+                                                        <Eye className="w-4 h-4" />
+                                                    </button>
+                                                ) : (
+                                                    <>
+                                                        <button onClick={() => handleEdit(u)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors" title="Edit">
+                                                            <Edit2 className="w-4 h-4" />
+                                                        </button>
+                                                        <button onClick={() => handleDelete(u.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors" title="Hapus">
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -312,6 +354,96 @@ export default function Users() {
                                     </button>
                                 </div>
                             </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+            , document.body)}
+
+            {/* Modal Preview & Approve */}
+            {createPortal(
+            <AnimatePresence>
+                {previewModal.show && previewModal.user && (
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                        <motion.div 
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                            onClick={() => !approving && setPreviewModal({ show: false, user: null })}
+                        />
+                        <motion.div 
+                            initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+                            className="bg-white rounded-2xl shadow-xl w-full max-w-lg relative z-10 overflow-hidden"
+                        >
+                            <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50">
+                                <h2 className="text-xl font-bold text-primary font-serif">Detail Pengguna</h2>
+                                <button onClick={() => setPreviewModal({ show: false, user: null })} className="text-gray-400 hover:text-gray-600">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <div className="p-6">
+                                <div className="flex items-center space-x-4 mb-6">
+                                    <img 
+                                        src={previewModal.user.avatar || 'https://incsmsociety.site/uploads/avatar/default.jpg'} 
+                                        alt={previewModal.user.name} 
+                                        className="w-16 h-16 rounded-full object-cover border border-gray-200 shadow-sm"
+                                    />
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-800">{previewModal.user.name}</h3>
+                                        <p className="text-sm text-gray-500">{previewModal.user.email} {previewModal.user.phone ? `• ${previewModal.user.phone}` : ''}</p>
+                                        <div className="mt-1 flex items-center gap-2">
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
+                                                {previewModal.user.role}
+                                            </span>
+                                            {previewModal.user.registration_number ? (
+                                                <span className="text-xs font-mono font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-100">
+                                                    {previewModal.user.registration_number}
+                                                </span>
+                                            ) : (
+                                                <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded border border-orange-100">
+                                                    Menunggu Persetujuan
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="bg-surface-warm p-4 rounded-xl border border-accent/20">
+                                    <h4 className="text-xs font-bold text-primary uppercase tracking-wider mb-2">Alasan Bergabung / Bio</h4>
+                                    <p className="text-sm text-gray-700 italic">
+                                        {previewModal.user.bio ? `"${previewModal.user.bio}"` : <span className="text-gray-400">Tidak ada informasi tambahan.</span>}
+                                    </p>
+                                </div>
+
+                                <div className="flex justify-between items-center gap-3 pt-6 mt-6 border-t border-gray-100">
+                                    <button 
+                                        onClick={() => handleDelete(previewModal.user.id)}
+                                        className="px-4 py-2.5 text-sm font-bold text-danger bg-danger/10 rounded-lg hover:bg-danger/20 transition-colors flex items-center gap-2"
+                                    >
+                                        <Trash2 className="w-4 h-4" /> Tolak & Hapus
+                                    </button>
+                                    
+                                    {!previewModal.user.registration_number ? (
+                                        <button 
+                                            onClick={() => handleApprove(previewModal.user.id)}
+                                            disabled={approving}
+                                            className="px-6 py-2.5 text-sm font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-70 flex items-center gap-2 shadow-md shadow-green-600/20 transition-all"
+                                        >
+                                            {approving ? (
+                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            ) : (
+                                                <><CheckCircle className="w-4 h-4" /> Approve User</>
+                                            )}
+                                        </button>
+                                    ) : (
+                                        <button 
+                                            onClick={() => setPreviewModal({ show: false, user: null })}
+                                            className="px-6 py-2.5 text-sm font-bold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                                        >
+                                            Tutup
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
                         </motion.div>
                     </div>
                 )}

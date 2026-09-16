@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
@@ -25,6 +26,28 @@ const SUGGESTIONS = [
     { icon: <LayoutTemplate className="w-4 h-4" />, label: "Template PDCA" }
 ];
 
+const getRecommendedDocs = (docs, query) => {
+    if (!docs || docs.length === 0) return [];
+    if (!query) return docs.slice(0, 4);
+
+    const keywords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+    
+    const scoredDocs = docs.map(doc => {
+        let score = 0;
+        const searchString = `${doc.title || ''} ${doc.category || ''} ${doc.description || ''} ${doc.tags_str || ''}`.toLowerCase();
+        
+        keywords.forEach(kw => {
+            if (searchString.includes(kw)) score += 1;
+        });
+        
+        return { ...doc, score };
+    });
+    
+    // Urutkan berdasarkan skor terbesar, jika skor sama gunakan urutan asli (terbaru)
+    scoredDocs.sort((a, b) => b.score - a.score);
+    return scoredDocs.slice(0, 4);
+};
+
 export default function SmartLibrary() {
     const [input, setInput] = useState('');
     const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -40,6 +63,25 @@ export default function SmartLibrary() {
 
     const [user, setUser] = useState(null);
     const [publicMembers, setPublicMembers] = useState([]);
+    const [publikasiList, setPublikasiList] = useState([]);
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchPublikasi = async () => {
+            try {
+                const res = await fetch(`${import.meta.env.BASE_URL}api/get_publikasi.php`);
+                const json = await res.json();
+                if (json.status === 'success') {
+                    const published = json.data.filter(p => p.status === 'publish');
+                    setPublikasiList(published);
+                }
+            } catch (err) {
+                console.error("Gagal memuat data publikasi", err);
+            }
+        };
+        fetchPublikasi();
+    }, []);
 
     useEffect(() => {
         const fetchMembers = async () => {
@@ -342,40 +384,48 @@ Susun jawaban secara rapi dan sangat terstruktur menggunakan Markdown. PENTING: 
                                         <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{aiResponseText}</ReactMarkdown>
                                     </div>
 
-                                    <div className="mt-8 pt-6 border-t border-gray-100">
-                                        <h3 className="font-serif text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                            <BookOpen className="w-5 h-5 text-accent" />
-                                            Rekomendasi Dokumen (Dummy Data)
-                                        </h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {[
-                                                { title: 'Panduan Evaluasi KPI Contact Center 2026.pdf', size: '2.4 MB', type: 'PDF' },
-                                                { title: 'Studi Kasus PDCA: Penurunan AHT di Industri Finansial.pdf', size: '1.8 MB', type: 'PDF' },
-                                                { title: 'Customer Success Management Handbook Vol 3.pdf', size: '5.1 MB', type: 'PDF' },
-                                                { title: 'Template Strategi Retensi Pelanggan B2B.docx', size: '840 KB', type: 'DOCX' }
-                                            ].map((file, idx) => (
-                                                <a
-                                                    key={idx}
-                                                    href="#"
-                                                    onClick={(e) => e.preventDefault()}
-                                                    className="flex items-start gap-4 p-4 rounded-2xl border border-gray-200 bg-white hover:border-accent/40 hover:shadow-md transition-all group cursor-pointer"
-                                                >
-                                                    <div className="bg-red-50 text-red-500 p-3 rounded-xl shrink-0 group-hover:scale-105 transition-transform">
-                                                        <FileText className="w-7 h-7" />
+                                    {publikasiList.length > 0 && (
+                                        <div className="mt-8 pt-6 border-t border-gray-100">
+                                            <h3 className="font-serif text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                                <BookOpen className="w-5 h-5 text-accent" />
+                                                Rekomendasi Dokumen
+                                            </h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {getRecommendedDocs(publikasiList, input).map((pub) => (
+                                                    <div
+                                                        key={pub.id}
+                                                        onClick={() => navigate('/publikasi')}
+                                                        className="flex items-center gap-4 p-3 rounded-2xl border border-gray-200 bg-white hover:border-accent/40 hover:shadow-md transition-all group cursor-pointer"
+                                                    >
+                                                        <div className="w-16 h-20 shrink-0 rounded-lg overflow-hidden relative shadow-sm border border-gray-100 bg-gray-50">
+                                                            {pub.coverImg ? (
+                                                                <img 
+                                                                    src={`${import.meta.env.BASE_URL}${pub.coverImg.substring(1)}`} 
+                                                                    alt={pub.title} 
+                                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                                />
+                                                            ) : (
+                                                                <div className="bg-red-50 text-red-500 w-full h-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                                                                    <FileText className="w-7 h-7" />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-grow min-w-0 flex flex-col justify-center">
+                                                            <p className="text-sm font-bold text-gray-800 line-clamp-2 mb-1.5 group-hover:text-primary transition-colors leading-snug" title={pub.title}>
+                                                                {pub.title}
+                                                            </p>
+                                                            <p className="text-[11px] text-gray-500 uppercase tracking-wide font-semibold truncate">
+                                                                {pub.category} • {pub.author}
+                                                            </p>
+                                                        </div>
+                                                        <div className="text-gray-300 group-hover:text-accent shrink-0 pl-1 transition-colors">
+                                                            <BookOpen className="w-5 h-5" />
+                                                        </div>
                                                     </div>
-                                                    <div className="flex-grow min-w-0 flex flex-col justify-center h-full">
-                                                        <p className="text-sm font-bold text-gray-800 truncate mb-1 group-hover:text-primary transition-colors">{file.title}</p>
-                                                        <p className="text-xs text-gray-500">
-                                                            {file.type} • {file.size}
-                                                        </p>
-                                                    </div>
-                                                    <div className="text-gray-300 group-hover:text-accent shrink-0 pt-2 transition-colors">
-                                                        <Download className="w-5 h-5" />
-                                                    </div>
-                                                </a>
-                                            ))}
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
 
                                     <div className="pt-8 border-t border-gray-200 flex justify-center">
                                         <button

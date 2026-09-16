@@ -15,6 +15,14 @@ export default function Auth() {
     const [emailCheckMessage, setEmailCheckMessage] = useState(null);
     const [checkingEmail, setCheckingEmail] = useState(false);
 
+    // Register states
+    const [regName, setRegName] = useState('');
+    const [regEmail, setRegEmail] = useState('');
+    const [regPhone, setRegPhone] = useState('');
+    const [regBio, setRegBio] = useState('');
+    const [regLoading, setRegLoading] = useState(false);
+    const [regStatus, setRegStatus] = useState(null);
+
     useEffect(() => {
         const storedUser = localStorage.getItem('csm_user');
         if (storedUser) {
@@ -78,6 +86,30 @@ export default function Auth() {
             setError('Terjadi kesalahan koneksi server.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleRegister = async (e) => {
+        e.preventDefault();
+        setRegLoading(true);
+        setRegStatus(null);
+        try {
+            const response = await fetch('https://incsmsociety.site/api/register.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: regName, email: regEmail, phone: regPhone, bio: regBio })
+            });
+            const data = await response.json();
+            if (data.status === 'success') {
+                setRegStatus({ type: 'success', message: data.message });
+                setRegName(''); setRegEmail(''); setRegPhone(''); setRegBio('');
+            } else {
+                setRegStatus({ type: 'error', message: data.message });
+            }
+        } catch (err) {
+            setRegStatus({ type: 'error', message: 'Terjadi kesalahan koneksi server.' });
+        } finally {
+            setRegLoading(false);
         }
     };
 
@@ -276,35 +308,50 @@ export default function Auth() {
                                     <p className="text-gray-500 text-sm">Isi formulir untuk pengajuan keanggotaan</p>
                                 </div>
 
-                                <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1.5">Nama Depan</label>
-                                            <input
-                                                type="text"
-                                                className="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent/50 focus:border-accent bg-gray-50/50 focus:bg-white transition-all duration-200 outline-none"
-                                                placeholder="Budi"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1.5">Nama Belakang</label>
-                                            <input
-                                                type="text"
-                                                className="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent/50 focus:border-accent bg-gray-50/50 focus:bg-white transition-all duration-200 outline-none"
-                                                placeholder="Santoso"
-                                            />
-                                        </div>
+                                {regStatus && (
+                                    <div className={`mb-4 p-3 border rounded-lg text-sm text-center ${regStatus.type === 'success' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-600'}`}>
+                                        {regStatus.message}
                                     </div>
+                                )}
+
+                                <form className="space-y-4" onSubmit={handleRegister}>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <Mail className="h-5 w-5 text-gray-400" />
+                                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Nama Lengkap</label>
+                                        <input
+                                            type="text"
+                                            value={regName}
+                                            onChange={(e) => setRegName(e.target.value)}
+                                            required
+                                            className="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent/50 focus:border-accent bg-gray-50/50 focus:bg-white transition-all duration-200 outline-none"
+                                            placeholder="Budi Santoso"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <Mail className="h-4 w-4 text-gray-400" />
+                                                </div>
+                                                <input
+                                                    type="email"
+                                                    value={regEmail}
+                                                    onChange={(e) => setRegEmail(e.target.value)}
+                                                    required
+                                                    className="block w-full pl-9 pr-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent/50 focus:border-accent bg-gray-50/50 focus:bg-white transition-all duration-200 outline-none text-sm"
+                                                    placeholder="email@example.com"
+                                                />
                                             </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1.5">Nomor Telepon (WA)</label>
                                             <input
-                                                type="email"
-                                                className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent/50 focus:border-accent bg-gray-50/50 focus:bg-white transition-all duration-200 outline-none"
-                                                placeholder="email@example.com"
+                                                type="tel"
+                                                value={regPhone}
+                                                onChange={(e) => setRegPhone(e.target.value)}
+                                                required
+                                                className="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent/50 focus:border-accent bg-gray-50/50 focus:bg-white transition-all duration-200 outline-none text-sm"
+                                                placeholder="081234567890"
                                             />
                                         </div>
                                     </div>
@@ -312,16 +359,20 @@ export default function Auth() {
                                         <label className="block text-sm font-medium text-gray-700 mb-1.5">Alasan Bergabung</label>
                                         <textarea
                                             rows="3"
-                                            className="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent/50 focus:border-accent bg-gray-50/50 focus:bg-white transition-all duration-200 outline-none resize-none"
+                                            value={regBio}
+                                            onChange={(e) => setRegBio(e.target.value)}
+                                            required
+                                            className="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent/50 focus:border-accent bg-gray-50/50 focus:bg-white transition-all duration-200 outline-none resize-none text-sm"
                                             placeholder="Ceritakan motivasi Anda..."
                                         ></textarea>
                                     </div>
                                     <button
                                         type="submit"
-                                        className="w-full flex items-center justify-center space-x-2 bg-accent hover:bg-accent-light text-primary py-3.5 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-accent/30 transform hover:-translate-y-0.5 mt-2"
+                                        disabled={regLoading}
+                                        className="w-full flex items-center justify-center space-x-2 bg-accent hover:bg-accent-light text-primary py-3.5 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-accent/30 transform hover:-translate-y-0.5 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
                                     >
-                                        <span>Kirim Pengajuan</span>
-                                        <ArrowRight className="w-4 h-4" />
+                                        <span>{regLoading ? 'Mengirim...' : 'Kirim Pengajuan'}</span>
+                                        {!regLoading && <ArrowRight className="w-4 h-4" />}
                                     </button>
                                 </form>
                             </motion.div>

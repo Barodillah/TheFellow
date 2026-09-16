@@ -50,17 +50,17 @@ export default function Home() {
 
         const interval = setInterval(() => {
             if (isHovered) return;
-            
+
             if (container.children.length === 0) return;
-            
+
             const maxScroll = container.scrollWidth - container.clientWidth;
             const scrollStep = container.children[0].clientWidth + 24; // width + gap-6(24px)
-            
+
             // If we are getting close to the end (within 3 cards), append more data!
             if (container.scrollLeft >= maxScroll - (scrollStep * 3)) {
                 setInfiniteFellows(prev => [...prev, ...FELLOWS_DATA]);
             }
-            
+
             container.scrollBy({ left: scrollStep, behavior: 'smooth' });
         }, 1500);
 
@@ -113,14 +113,14 @@ export default function Home() {
                     <div className="hidden lg:block absolute right-0 bottom-0 translate-y-1/2 w-[480px] z-[50]">
                         <div className="bg-gradient-to-br from-accent to-accent-light text-primary p-12 shadow-2xl w-full">
                             <h2 className="font-serif text-5xl font-extrabold leading-tight mb-2 uppercase">
-                                CS National<br />Meeting <span className="font-sans font-black">2026</span>
+                                First Sans Frontières<br />Gathering
                             </h2>
 
                             <div className="h-[2px] bg-primary/20 my-6"></div>
 
-                            <h3 className="font-sans text-lg font-bold mb-2">Customer Satisfaction Summit</h3>
+                            <h3 className="font-sans text-lg font-bold mb-2">Sept 9, 2026</h3>
                             <p className="font-sans text-sm text-primary/80 leading-relaxed">
-                                Explore this year's full programme and plan your visit.
+                                Agreement on the pact for continued progress.
                             </p>
                         </div>
                     </div>
@@ -267,8 +267,8 @@ export default function Home() {
                 </div>
 
                 {/* Horizontal Scroll Container */}
-                <div 
-                    ref={sliderRef} 
+                <div
+                    ref={sliderRef}
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
                     className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 -mx-4 px-4 sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
@@ -342,7 +342,7 @@ export default function Home() {
                 <div className="bg-gradient-to-br from-primary to-primary-light rounded-3xl p-8 md:p-16 shadow-2xl relative overflow-hidden border border-accent/20">
                     <div className="absolute top-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
                     <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none"></div>
-                    
+
                     <div className="relative z-10 flex flex-col lg:flex-row items-center gap-12">
                         <div className="lg:w-2/3">
                             <span className="inline-block bg-accent/20 border border-accent/30 text-accent font-bold tracking-widest uppercase text-xs px-4 py-1.5 rounded-full mb-6 shadow-sm">
@@ -358,7 +358,7 @@ export default function Home() {
                                 CSM Intellectual Society hadir sebagai <strong className="text-white font-semibold">jembatan pengetahuan</strong>—sebuah ruang inklusif di mana ide-ide inovatif dibagikan secara terbuka. Kami memastikan setiap profesional, terlepas dari keterbatasan dukungan dan investasi di tempatnya berada, dapat mengakses standar emas pelayanan untuk bertumbuh bersama.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4">
-                                <Link 
+                                <Link
                                     to="/about"
                                     className="bg-accent hover:bg-accent-light text-primary font-sans text-sm font-bold px-8 py-4 rounded shadow-lg transition duration-200 text-center inline-flex justify-center items-center gap-2 group"
                                 >
@@ -367,7 +367,7 @@ export default function Home() {
                                 </Link>
                             </div>
                         </div>
-                        
+
                         <div className="lg:w-1/3 hidden lg:flex justify-center items-center">
                             <div className="relative">
                                 <div className="absolute inset-0 bg-accent/20 rounded-full blur-2xl animate-pulse"></div>

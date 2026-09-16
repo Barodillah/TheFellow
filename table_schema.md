@@ -105,3 +105,29 @@ Tabel relasional (Pivot) untuk mencegah pengguna melakukan like lebih dari satu 
 - `entity_type` (ENUM: 'thread', 'reply') - Menandakan apakah yang di-like adalah thread utama atau balasan.
 - `created_at` (TIMESTAMP)
 - *Primary Key* digabungkan (Composite) dari: `user_id`, `entity_id`, dan `entity_type`.
+
+### 10. Tabel `quizzes`
+Tabel untuk menyimpan data kuis wajib.
+- `id` (INT AUTO_INCREMENT, Primary Key)
+- `title` (VARCHAR(255))
+- `description` (TEXT, Nullable)
+- `deadline` (DATETIME)
+- `status` (ENUM: 'active', 'expired', 'draft')
+- `created_at` (TIMESTAMP)
+
+### 11. Tabel `quiz_questions`
+Tabel untuk menyimpan daftar pertanyaan per kuis.
+- `id` (INT AUTO_INCREMENT, Primary Key)
+- `quiz_id` (INT, Foreign Key ke tabel `quizzes`)
+- `question_text` (TEXT)
+- `options` (JSON)
+- `created_at` (TIMESTAMP)
+
+### 12. Tabel `quiz_submissions`
+Tabel untuk menyimpan hasil pekerjaan member.
+- `id` (INT AUTO_INCREMENT, Primary Key)
+- `quiz_id` (INT, Foreign Key ke tabel `quizzes`)
+- `user_id` (CHAR(36), Foreign Key ke tabel `users`)
+- `score` (INT)
+- `answers` (JSON)
+- `submitted_at` (TIMESTAMP)
