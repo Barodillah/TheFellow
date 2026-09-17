@@ -10,6 +10,34 @@ export default function Home() {
     const [isHovered, setIsHovered] = useState(false);
     const [dbFellows, setDbFellows] = useState([]);
     const [recentPublikasi, setRecentPublikasi] = useState([]);
+    const [events, setEvents] = useState([]);
+    const [currentEventIndex, setCurrentEventIndex] = useState(0);
+
+    // Dummy fetch for events (simulation)
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const res = await fetch(`https://incsmsociety.site/api/get_events.php?t=${Date.now()}`);
+                const data = await res.json();
+                if (data.status === 'success') {
+                    const activeEvents = data.data.filter(e => e.is_active);
+                    setEvents(activeEvents);
+                }
+            } catch (err) {
+                console.error("Gagal memuat events", err);
+            }
+        };
+        fetchEvents();
+    }, []);
+
+    // Carousel interval
+    useEffect(() => {
+        if (events.length <= 1) return;
+        const interval = setInterval(() => {
+            setCurrentEventIndex(prev => (prev + 1) % events.length);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [events.length]);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -111,18 +139,58 @@ export default function Home() {
 
                     {/* Right Column — Event Card (flush right, straddles hero bottom edge) */}
                     <div className="hidden lg:block absolute right-0 bottom-0 translate-y-1/2 w-[480px] z-[50]">
-                        <div className="bg-gradient-to-br from-accent to-accent-light text-primary p-12 shadow-2xl w-full">
-                            <h2 className="font-serif text-5xl font-extrabold leading-tight mb-2 uppercase">
-                                First Sans Frontières<br />Gathering
-                            </h2>
+                        {events.length > 0 ? (
+                            <div className="bg-gradient-to-br from-accent to-accent-light text-primary p-12 shadow-2xl w-full min-h-[380px] relative flex flex-col justify-center">
+                                {/* Carousel Content */}
+                                <div className="transition-opacity duration-500 mb-8" key={events[currentEventIndex].id}>
+                                    <h2 className="font-serif text-5xl font-extrabold leading-tight mb-2 uppercase whitespace-pre-line">
+                                        {events[currentEventIndex].title}
+                                    </h2>
 
-                            <div className="h-[2px] bg-primary/20 my-6"></div>
+                                    <div className="h-[2px] bg-primary/20 my-6"></div>
 
-                            <h3 className="font-sans text-lg font-bold mb-2">Sept 9, 2026</h3>
-                            <p className="font-sans text-sm text-primary/80 leading-relaxed">
-                                Agreement on the pact for continued progress.
-                            </p>
-                        </div>
+                                    <h3 className="font-sans text-lg font-bold mb-2">{events[currentEventIndex].event_date}</h3>
+                                    <p className="font-sans text-sm text-primary/80 leading-relaxed">
+                                        {events[currentEventIndex].description}
+                                    </p>
+                                </div>
+                                
+                                {/* Carousel Indicators */}
+                                {events.length > 1 && (
+                                    <div className="absolute bottom-8 left-12 flex gap-2">
+                                        {events.map((_, idx) => (
+                                            <button 
+                                                key={idx}
+                                                onClick={() => setCurrentEventIndex(idx)}
+                                                className={`h-2 rounded-full transition-all duration-300 ${idx === currentEventIndex ? 'bg-primary w-6' : 'bg-primary/30 w-2 hover:bg-primary/50'}`}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="bg-white text-primary p-0 shadow-2xl w-full border-t-4 border-accent overflow-hidden rounded-b-lg">
+                                <div 
+                                    className="h-48 w-full bg-cover bg-center"
+                                    style={{ backgroundImage: "url('https://incsmsociety.site/wp/uploads/asset_6aaba2cda93af9.89151432.png')" }}
+                                ></div>
+                                <div className="p-10 text-center">
+                                    <h2 className="font-serif text-3xl font-extrabold leading-tight mb-4 text-primary">
+                                        Bergabunglah Bersama Kami!
+                                    </h2>
+                                    <p className="font-sans text-sm text-gray-500 leading-relaxed mb-6">
+                                        Jadilah bagian dari pionir standar emas Customer Experience di jaringan diler Mitsubishi Motors.
+                                    </p>
+                                    <Link 
+                                        to="/login"
+                                        state={{ isLogin: false }}
+                                        className="inline-block bg-accent hover:bg-accent-light text-primary font-sans text-sm font-semibold px-8 py-3 rounded transition duration-200"
+                                    >
+                                        Daftar Sekarang
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </section>

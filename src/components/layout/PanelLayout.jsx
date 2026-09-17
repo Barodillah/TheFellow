@@ -17,7 +17,8 @@ import {
     BookOpen,
     HelpCircle,
     ChevronDown,
-    ChevronRight
+    ChevronRight,
+    Calendar
 } from 'lucide-react';
 
 export default function PanelLayout() {
@@ -79,7 +80,10 @@ export default function PanelLayout() {
         { icon: User, label: 'Profil Saya', path: '/profile' },
         { icon: Trophy, label: 'Achievements', path: '/achievements' },
         { icon: BookOpen, label: 'Publikasi', path: '/manage-publikasi' },
-        ...(user?.role === 'admin' ? [{ icon: Users, label: 'Users', path: '/users' }] : [])
+        ...(user?.role === 'admin' ? [
+            { icon: Users, label: 'Users', path: '/users' },
+            { icon: Calendar, label: 'Manage Events', path: '/manage-events' }
+        ] : [])
     ];
 
     const handleLogout = (e) => {

@@ -102,28 +102,39 @@ export default function Fellows() {
     );
 
     return (
-        <div className="bg-surface-warm min-h-screen pt-24 pb-24">
+        <div className="bg-surface-warm min-h-screen pt-12 pb-24">
             
             {/* Header Section */}
-            <div className="max-w-7xl mx-auto px-4 mb-16 text-center relative z-10">
-                <span className="inline-block bg-accent/20 border border-accent/30 text-accent font-bold tracking-widest uppercase text-xs px-4 py-1.5 rounded-full mb-4 shadow-sm">
-                    CSM Intellectual Society
-                </span>
-                <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold text-primary mb-6 drop-shadow-md">
-                    Direktori Anggota
-                </h1>
-                <p className="font-sans text-gray-500 max-w-2xl mx-auto text-lg leading-relaxed mb-8">
-                    Mengenal lebih dekat para pionir dan pakar pelopor standar emas <i>Customer Experience</i> di jaringan diler Mitsubishi Motors.
-                </p>
-                <div className="max-w-md mx-auto relative">
-                    <Search className="w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <input 
-                        type="text" 
-                        placeholder="Cari nama atau jabatan..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm"
-                    />
+            <div 
+                className="max-w-7xl mx-auto px-4 mb-16 py-16 text-center relative z-10 bg-cover rounded-3xl overflow-hidden shadow-sm"
+                style={{ 
+                    backgroundImage: "url('https://incsmsociety.site/wp/uploads/asset_6aaba2cda93af9.89151432.png')",
+                    backgroundPosition: 'center' 
+                }}
+            >
+                {/* Overlay for text readability */}
+                <div className="absolute inset-0 bg-white/40"></div>
+                
+                <div className="relative z-20">
+                    <span className="inline-block bg-accent/20 border border-accent/30 text-accent font-bold tracking-widest uppercase text-xs px-4 py-1.5 rounded-full mb-4 shadow-sm bg-white/50 backdrop-blur-sm">
+                        CSM Intellectual Society
+                    </span>
+                    <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold text-primary mb-6 drop-shadow-md">
+                        Direktori Anggota
+                    </h1>
+                    <p className="font-sans text-gray-700 max-w-2xl mx-auto text-lg leading-relaxed mb-8 font-medium">
+                        Mengenal lebih dekat para pionir dan pakar pelopor standar emas <i>Customer Experience</i> di jaringan diler Mitsubishi Motors.
+                    </p>
+                    <div className="max-w-md mx-auto relative">
+                        <Search className="w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 z-10" />
+                        <input 
+                            type="text" 
+                            placeholder="Cari nama atau jabatan..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-12 pr-4 py-3 bg-white/95 backdrop-blur-md border border-gray-200/60 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm relative z-0"
+                        />
+                    </div>
                 </div>
             </div>
 

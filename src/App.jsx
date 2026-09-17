@@ -33,6 +33,7 @@ import PanelAchievements from './pages/PanelAchievements';
 import PanelPublikasi from './pages/PanelPublikasi';
 import CalculatorTarget from './pages/CalculatorTarget';
 import PDCAGenerator from './pages/PDCAGenerator';
+import ManageEvents from './pages/ManageEvents';
 
 function App() {
   return (
@@ -72,6 +73,7 @@ function App() {
           <Route path="/users" element={<Users />} />
           <Route path="/calculator-target" element={<CalculatorTarget />} />
           <Route path="/pdca-generator" element={<PDCAGenerator />} />
+          <Route path="/manage-events" element={<ManageEvents />} />
           <Route path="/pdca" element={<PDCA />} />
         </Route>
       </Routes>

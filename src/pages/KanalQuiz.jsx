@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { HelpCircle, Clock, Calendar, CheckCircle, Lock, Plus, ArrowRight, Search, AlertCircle, Trophy, History } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { HelpCircle, Clock, Calendar, CheckCircle, CheckCircle2, Lock, Plus, ArrowRight, Search, AlertCircle, Trophy, History, X, Star, ChevronRight, PlayCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function KanalQuiz() {
     const [user, setUser] = useState(null);
@@ -10,12 +11,17 @@ export default function KanalQuiz() {
     const [error, setError] = useState(null);
     const [currentTime, setCurrentTime] = useState(new Date());
 
+    // Leaderboard state
+    const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+    const [leaderboardData, setLeaderboardData] = useState([]);
+    const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+
     useEffect(() => {
         const userData = localStorage.getItem('csm_user');
         if (userData) {
             setUser(JSON.parse(userData));
         }
-        
+
         const timer = setInterval(() => {
             setCurrentTime(new Date());
         }, 1000);
@@ -32,7 +38,7 @@ export default function KanalQuiz() {
                 // Fetch dari live API
                 const response = await fetch(`https://incsmsociety.site/api/get_quizzes.php?user_id=${user.id}`);
                 const result = await response.json();
-                
+
                 if (result.success) {
                     setQuizzes(result.data);
                 } else {
@@ -49,16 +55,36 @@ export default function KanalQuiz() {
         fetchQuizzes();
     }, [user?.id]);
 
+    const fetchGlobalLeaderboard = async () => {
+        setLoadingLeaderboard(true);
+        try {
+            const res = await fetch(`https://incsmsociety.site/api/get_global_leaderboard.php?t=${Date.now()}`);
+            const data = await res.json();
+            if (data.success) {
+                setLeaderboardData(data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching leaderboard:', error);
+        } finally {
+            setLoadingLeaderboard(false);
+        }
+    };
+
+    const handleOpenLeaderboard = () => {
+        fetchGlobalLeaderboard();
+        setIsLeaderboardOpen(true);
+    };
+
     // Data filtering
     const activeQuizzes = quizzes.filter(q => q.status === 'active');
     const historyQuizzes = quizzes.filter(q => q.status === 'expired');
 
-    const filteredActiveQuizzes = activeQuizzes.filter(q => 
+    const filteredActiveQuizzes = activeQuizzes.filter(q =>
         q.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         q.description?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const filteredHistoryQuizzes = historyQuizzes.filter(q => 
+    const filteredHistoryQuizzes = historyQuizzes.filter(q =>
         q.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         q.description?.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -67,20 +93,20 @@ export default function KanalQuiz() {
         if (!deadlineStr) return '-';
         const target = new Date(deadlineStr.replace(' ', 'T') + 'Z');
         const diff = target - currentTime;
-        
+
         if (diff <= 0) return 'Tenggat Berlalu';
-        
+
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
         const mins = Math.floor((diff / 1000 / 60) % 60);
         const secs = Math.floor((diff / 1000) % 60);
-        
+
         let result = [];
         if (days > 0) result.push(`${days} Hari`);
         if (hours > 0 || days > 0) result.push(`${hours}j`);
         if (mins > 0 || hours > 0 || days > 0) result.push(`${mins}m`);
         result.push(`${secs}d`);
-        
+
         return result.join(' ');
     };
 
@@ -94,13 +120,22 @@ export default function KanalQuiz() {
                     </h1>
                     <p className="text-sm text-gray-500 mt-1">Uji pemahaman Anda melalui evaluasi berkala dan kumpulkan poin intelektual.</p>
                 </div>
-                
-                {user?.role === 'admin' && (
-                    <Link to="/kanal-quiz/create" className="mt-4 md:mt-0 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-lg shadow-primary/20">
-                        <Plus className="w-4 h-4" />
-                        Buat Quiz Baru
-                    </Link>
-                )}
+
+                <div className="mt-4 md:mt-0 flex items-center gap-3">
+                    <button
+                        onClick={handleOpenLeaderboard}
+                        className="flex items-center justify-center gap-2 bg-gradient-to-r from-accent to-accent-light text-primary hover:shadow-lg px-5 py-2.5 rounded-xl text-sm font-bold transition-all transform hover:-translate-y-0.5"
+                    >
+                        <Trophy className="w-4 h-4" />
+                        Leaderboard
+                    </button>
+                    {user?.role === 'admin' && (
+                        <Link to="/kanal-quiz/create" className="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-lg shadow-primary/20">
+                            <Plus className="w-4 h-4" />
+                            Buat Quiz
+                        </Link>
+                    )}
+                </div>
             </div>
 
             {/* Search Bar */}
@@ -149,7 +184,7 @@ export default function KanalQuiz() {
                                             </div>
                                             <h3 className="font-bold text-gray-800 text-lg mb-2 pr-12">{quiz.title}</h3>
                                             <p className="text-sm text-gray-600 mb-4 line-clamp-2">{quiz.description}</p>
-                                            
+
                                             <div className="flex flex-col gap-2 mb-5">
                                                 <div className="text-xs text-gray-500 font-medium">
                                                     {quiz.isCompleted ? (
@@ -169,7 +204,7 @@ export default function KanalQuiz() {
                                             <span className={`text-xs font-semibold ${quiz.isCompleted ? 'text-green-500' : 'text-gray-400'}`}>
                                                 {quiz.isCompleted ? `Skor Tertinggi: ${quiz.userScore}` : 'Belum Dikerjakan'}
                                             </span>
-                                            <Link 
+                                            <Link
                                                 to={`/kanal-quiz/take/${quiz.id}`}
                                                 className={`flex items-center gap-1 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors ${quiz.isCompleted ? 'bg-orange-500 hover:bg-orange-600' : 'bg-primary hover:bg-primary/90'}`}
                                             >
@@ -200,13 +235,13 @@ export default function KanalQuiz() {
                                             <div className="flex justify-between items-start mb-2">
                                                 <h3 className="font-semibold text-gray-700 text-sm">{quiz.title}</h3>
                                             </div>
-                                            
+
                                             <div className="flex items-center gap-1 text-[10px] text-gray-400 mb-4">
                                                 <Calendar className="w-3 h-3" />
                                                 Ditutup pada {quiz.deadline ? new Date(quiz.deadline.replace(' ', 'T') + 'Z').toLocaleDateString('id-ID') : '-'}
                                             </div>
                                         </div>
-                                        
+
                                         <div className="flex items-center justify-between border-t border-gray-200 pt-3 mt-auto">
                                             {quiz.isCompleted ? (
                                                 <div className="flex flex-col">
@@ -219,8 +254,8 @@ export default function KanalQuiz() {
                                                     <span className="text-lg font-bold text-gray-400">0</span>
                                                 </div>
                                             )}
-                                            
-                                            <Link 
+
+                                            <Link
                                                 to={`/kanal-quiz/take/${quiz.id}`}
                                                 className="text-xs font-medium text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
                                             >
@@ -234,6 +269,96 @@ export default function KanalQuiz() {
                     </div>
                 </>
             )}
+
+            {/* Leaderboard Slide Over */}
+            <AnimatePresence>
+                {isLeaderboardOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsLeaderboardOpen(false)}
+                            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+                        />
+                        <motion.div
+                            initial={{ x: '100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '100%' }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                            className="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col"
+                        >
+                            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-primary text-white">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-white/10 rounded-lg">
+                                        <Trophy className="w-6 h-6 text-accent" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold">Leaderboard CSM</h2>
+                                        <p className="text-sm text-white/70">Peringkat Poin Intelektual</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setIsLeaderboardOpen(false)}
+                                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50">
+                                {loadingLeaderboard ? (
+                                    <div className="flex justify-center py-10">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                                    </div>
+                                ) : leaderboardData.length === 0 ? (
+                                    <div className="text-center py-10 text-gray-500">
+                                        Belum ada data peringkat.
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {leaderboardData.map((lb, idx) => (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: idx * 0.05 }}
+                                                key={lb.id}
+                                                className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow relative overflow-hidden"
+                                            >
+                                                {idx < 3 && (
+                                                    <div className={`absolute top-0 left-0 w-1 h-full ${idx === 0 ? 'bg-yellow-400' : idx === 1 ? 'bg-gray-300' : 'bg-amber-700'
+                                                        }`} />
+                                                )}
+                                                <div className="flex-shrink-0 w-8 text-center font-bold text-gray-400">
+                                                    #{idx + 1}
+                                                </div>
+                                                <img
+                                                    src={lb.avatar ? (lb.avatar.startsWith('http') ? lb.avatar : `https://incsmsociety.site/api/${lb.avatar}`) : 'https://incsmsociety.site/uploads/avatar/default.jpg'}
+                                                    alt={lb.name}
+                                                    className="w-12 h-12 rounded-full object-cover border-2 border-gray-100"
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="font-bold text-gray-800 truncate">{lb.name}</h3>
+                                                    <p className="text-xs text-gray-500 truncate">
+                                                        {lb.csm_title || (lb.role ? lb.role.charAt(0).toUpperCase() + lb.role.slice(1) : 'Member')}
+                                                    </p>
+                                                </div>
+                                                <div className="flex-shrink-0 flex flex-col items-end">
+                                                    <div className="flex items-center gap-1 text-accent font-bold">
+                                                        <span>{lb.total_points}</span>
+                                                        <Star className="w-4 h-4 fill-current" />
+                                                    </div>
+                                                    <span className="text-[10px] text-gray-400">Poin</span>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

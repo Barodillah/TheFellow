@@ -1,0 +1,13 @@
+PC KANTOR - 17/09/26 16.32
+
+- Fixed CTA routing to /login in Home
+- Added header background image with opacity & blur in Fellows.jsx
+- Added ManageEvents.jsx page (Event CRUD) with admin side menu in PanelLayout
+- Integrated Home.jsx to fetch and display dynamic events via API
+- Created PHP API endpoints for events (get_events, add, edit, delete, toggle)
+- Refactored frontend fetch URLs to use absolute live path (bypass local Vite proxy cache)
+- Added custom delete confirmation modal and toast alerts in ManageEvents.jsx
+- Added Global Leaderboard (Poin Intelektual) slide panel in KanalQuiz.jsx
+- Created PHP API endpoint (get_global_leaderboard.php) with LEFT JOIN for 0-point users
+- Fixed leaderboard UI (double avatar URL issue, dynamic role fallback for CSM title, default avatar)
+- Updated table_schema.md & table_schema.sql with new tables (events)
