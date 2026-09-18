@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Shield, ArrowRight, Calendar, User, RefreshCcw, HeartHandshake, BookOpen, MessageSquare, Target, Users, Zap, Globe, Award, Briefcase, FileText, ChevronRight } from 'lucide-react';
+import { Shield, ArrowRight, Calendar, User, RefreshCcw, HeartHandshake, BookOpen, MessageSquare, Target, Users, Zap, Globe, Award, Briefcase, FileText, ChevronRight, Wrench, Lightbulb, FolderKanban, Calculator, MessageCircle, Library, PenTool, BookMarked } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import DecorativeRule from '../components/shared/DecorativeRule';
 
@@ -12,6 +12,31 @@ export default function Home() {
     const [recentPublikasi, setRecentPublikasi] = useState([]);
     const [events, setEvents] = useState([]);
     const [currentEventIndex, setCurrentEventIndex] = useState(0);
+    const [ekosistemIndex, setEkosistemIndex] = useState(0);
+
+    const ekosistemItems = [
+        { title: "PDCA Generator", desc: "Asisten cerdas merumuskan hipotesis & akar masalah.", icon: <Lightbulb className="w-8 h-8 text-amber-500 group-hover:scale-110 transition-transform" />, link: "/pdca-generator" },
+        { title: "PDCA Tracker", desc: "Dasbor manajemen proyek siklus eksekusi Plan-Do-Check-Act.", icon: <FolderKanban className="w-8 h-8 text-emerald-500 group-hover:scale-110 transition-transform" />, link: "/pdca-tracker" },
+        { title: "Kalkulator Target", desc: "Hitung target dan proyeksi KPI pencapaian layanan.", icon: <Calculator className="w-8 h-8 text-purple-500 group-hover:scale-110 transition-transform" />, link: "/calculator-target" },
+        { title: "WA Blast Tool", desc: "Broadcaster pesan untuk menciptakan Memorable Experience.", icon: <MessageCircle className="w-8 h-8 text-green-500 group-hover:scale-110 transition-transform" />, link: "/whatsapp-blast" },
+        { title: "Standar H.O.M.E", desc: "Panduan interaktif 4 pilar emas standar layanan CSM.", icon: <Shield className="w-8 h-8 text-primary group-hover:scale-110 transition-transform" />, link: "/home-standard" },
+        { title: "Metodologi PDCA", desc: "Framework perbaikan berkelanjutan berbasis pemecahan masalah.", icon: <Target className="w-8 h-8 text-blue-500 group-hover:scale-110 transition-transform" />, link: "/pdca-metodologi" },
+        { title: "Smart Library", desc: "Perpustakaan sentral dokumen, literatur, dan arsip operasional.", icon: <Library className="w-8 h-8 text-indigo-500 group-hover:scale-110 transition-transform" />, link: "/smart-library" },
+        { title: "Kanal Quiz", desc: "Uji pemahaman prosedur dan skenario melalui tantangan gamifikasi.", icon: <PenTool className="w-8 h-8 text-orange-500 group-hover:scale-110 transition-transform" />, link: "/kanal-quiz" },
+        { title: "Fellows Directory", desc: "Temukan dan terhubung dengan sesama profesional pelayanan.", icon: <User className="w-8 h-8 text-cyan-500 group-hover:scale-110 transition-transform" />, link: "/fellows" },
+        { title: "Forum Diskusi", desc: "Ruang kolaborasi dan ruang interaksi berbagi solusi operasional.", icon: <MessageSquare className="w-8 h-8 text-rose-500 group-hover:scale-110 transition-transform" />, link: "/forum" },
+        { title: "Papan Publikasi", desc: "Akses jurnal, buletin, dan dokumentasi pencapaian terbaik.", icon: <BookMarked className="w-8 h-8 text-fuchsia-500 group-hover:scale-110 transition-transform" />, link: "/publikasi" },
+        { title: "Artikel & Update", desc: "Berita, insight, dan informasi terkini seputar dunia TheFellow.", icon: <FileText className="w-8 h-8 text-sky-500 group-hover:scale-110 transition-transform" />, link: "/articles" }
+    ];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setEkosistemIndex(prev => {
+                return (prev + 3 >= ekosistemItems.length) ? 0 : prev + 3;
+            });
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [ekosistemItems.length]);
 
     // Dummy fetch for events (simulation)
     useEffect(() => {
@@ -154,12 +179,12 @@ export default function Home() {
                                         {events[currentEventIndex].description}
                                     </p>
                                 </div>
-                                
+
                                 {/* Carousel Indicators */}
                                 {events.length > 1 && (
                                     <div className="absolute bottom-8 left-12 flex gap-2">
                                         {events.map((_, idx) => (
-                                            <button 
+                                            <button
                                                 key={idx}
                                                 onClick={() => setCurrentEventIndex(idx)}
                                                 className={`h-2 rounded-full transition-all duration-300 ${idx === currentEventIndex ? 'bg-primary w-6' : 'bg-primary/30 w-2 hover:bg-primary/50'}`}
@@ -170,7 +195,7 @@ export default function Home() {
                             </div>
                         ) : (
                             <div className="bg-white text-primary p-0 shadow-2xl w-full border-t-4 border-accent overflow-hidden rounded-b-lg">
-                                <div 
+                                <div
                                     className="h-48 w-full bg-cover bg-center"
                                     style={{ backgroundImage: "url('https://incsmsociety.site/wp/uploads/asset_6aaba2cda93af9.89151432.png')" }}
                                 ></div>
@@ -181,7 +206,7 @@ export default function Home() {
                                     <p className="font-sans text-sm text-gray-500 leading-relaxed mb-6">
                                         Jadilah bagian dari pionir standar emas Customer Experience di jaringan diler Mitsubishi Motors.
                                     </p>
-                                    <Link 
+                                    <Link
                                         to="/login"
                                         state={{ isLogin: false }}
                                         className="inline-block bg-accent hover:bg-accent-light text-primary font-sans text-sm font-semibold px-8 py-3 rounded transition duration-200"
@@ -224,7 +249,7 @@ export default function Home() {
                         </div>
                         <div className="relative z-10 mt-auto pt-8 border-t border-white/10">
                             <Link
-                                to="/pdca"
+                                to="/pdca-metodologi"
                                 className="inline-flex items-center gap-2 text-accent font-bold hover:text-white transition-colors group/btn"
                             >
                                 Pelajari Metodologi PDCA
@@ -263,7 +288,49 @@ export default function Home() {
 
                 </div>
             </section>
+            {/* FITUR & TOOLS DALAM WEBSITE */}
+            <section className="py-24 px-4 max-w-7xl mx-auto border-t border-accent/20 bg-slate-50/50 rounded-3xl mb-12">
+                <div className="text-center mb-16">
+                    <span className="text-xs font-bold uppercase tracking-widest text-accent mb-3 block">Ekosistem TheFellow</span>
+                    <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-primary mb-6">Menjembatani Kesenjangan Kompetensi</h2>
+                    <p className="text-slate-500 max-w-2xl mx-auto text-lg leading-relaxed">
+                        Kumpulan perangkat kerja cerdas, pusat pengetahuan, dan jejaring kolaborasi untuk meningkatkan kualitas layanan Anda setiap hari.
+                    </p>
+                </div>
 
+                <div className="overflow-hidden">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 transition-opacity duration-500">
+                        {ekosistemItems.slice(ekosistemIndex, ekosistemIndex + 3).map((item, idx) => (
+                            <Link key={ekosistemIndex + idx} to={item.link} className="group block bg-white p-8 rounded-2xl border border-slate-200 hover:border-accent hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full animate-in fade-in zoom-in-95 duration-500">
+                                <div className="flex justify-between items-start mb-6">
+                                    {item.icon}
+                                    <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-accent group-hover:translate-x-1 transition-all" />
+                                </div>
+                                <h4 className="font-bold text-slate-800 text-xl mb-3">{item.title}</h4>
+                                <p className="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Carousel Indicators */}
+                <div className="flex justify-center items-center gap-2 mt-10">
+                    {Array.from({ length: Math.ceil(ekosistemItems.length / 3) }).map((_, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => setEkosistemIndex(idx * 3)}
+                            className={`h-2 rounded-full transition-all duration-300 ${Math.floor(ekosistemIndex / 3) === idx ? 'bg-primary w-6' : 'bg-primary/30 w-2 hover:bg-primary/50'}`}
+                            aria-label={`Go to slide ${idx + 1}`}
+                        />
+                    ))}
+                </div>
+                
+                <div className="mt-16 text-center">
+                    <Link to="/ekosistem" className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 duration-300">
+                        Lihat Semua Ekosistem <ArrowRight className="w-5 h-5" />
+                    </Link>
+                </div>
+            </section>
             {/* NEWS & ARTICLE SECTION */}
             <section className="py-20 px-4 max-w-7xl mx-auto border-t border-accent/20">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12">

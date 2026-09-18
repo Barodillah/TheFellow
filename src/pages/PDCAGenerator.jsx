@@ -302,7 +302,7 @@ const PDCAGenerator = () => {
 
     setToast({ show: true, message: "Plan berhasil disimpan! Anda akan dialihkan ke Tracker.", type: 'success' });
     setTimeout(() => {
-      navigate('/pdca');
+      navigate('/pdca-tracker');
     }, 2000);
   };
 

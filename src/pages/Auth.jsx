@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogIn, UserPlus, Mail, Lock, ArrowRight, Shield, Sparkles } from 'lucide-react';
 
@@ -382,7 +382,7 @@ export default function Auth() {
                     <div className="mt-8 text-center">
                         <p className="text-xs text-gray-400">
                             Dengan {isLogin ? 'masuk' : 'mengajukan keanggotaan'}, Anda menyetujui <br />
-                            <a href="#" className="text-primary hover:underline">Syarat & Ketentuan</a> serta <a href="#" className="text-primary hover:underline">Kebijakan Privasi</a> kami.
+                            <Link to="/syarat-ketentuan" className="text-primary hover:underline">Syarat & Ketentuan</Link> serta <Link to="/kebijakan-privasi" className="text-primary hover:underline">Kebijakan Privasi</Link> kami.
                         </p>
                     </div>
                 </div>

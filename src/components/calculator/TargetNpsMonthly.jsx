@@ -97,8 +97,13 @@ export default function TargetNpsMonthly() {
 
     const remainingDays = Math.max(0, effectiveTotalDays - effectiveCurrentDay);
     const avgSurveysPerDay = effectiveCurrentDay > 0 ? (totalSurveys / effectiveCurrentDay).toFixed(1) : 0;
+    const avgPromotersPerDay = effectiveCurrentDay > 0 ? (promoters / effectiveCurrentDay).toFixed(1) : 0;
+    const avgPassivesPerDay = effectiveCurrentDay > 0 ? (passives / effectiveCurrentDay).toFixed(1) : 0;
+    const avgDetractorsPerDay = effectiveCurrentDay > 0 ? (detractors / effectiveCurrentDay).toFixed(1) : 0;
+
     const estimatedRemainingSurveys = Math.round(Number(avgSurveysPerDay) * remainingDays);
     const estimatedTotalSurveys = totalSurveys + estimatedRemainingSurveys;
+    const estimatedNpsIfAllPromoters = estimatedTotalSurveys > 0 ? Math.round((((promoters + estimatedRemainingSurveys) - detractors) / estimatedTotalSurveys) * 100) : 0;
     
     // Min promoters from remaining surveys
     let minPromotersFromRemaining = 0;
@@ -270,6 +275,21 @@ export default function TargetNpsMonthly() {
                                     <span className="text-xs font-bold text-blue-500 mb-1">survei/hari</span>
                                 </div>
                                 <span className="text-[10px] text-blue-500/80 font-medium mt-3">Total {totalSurveys} survei dalam {effectiveCurrentDay} hari kerja</span>
+
+                                <div className="mt-3 pt-3 border-t border-blue-200/60 grid grid-cols-3 gap-2 relative z-10">
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-[8px] text-green-600/80 font-bold uppercase">Pro</span>
+                                        <span className="text-xs font-black text-green-700">{avgPromotersPerDay}</span>
+                                    </div>
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-[8px] text-gray-500/80 font-bold uppercase">Pas</span>
+                                        <span className="text-xs font-black text-gray-700">{avgPassivesPerDay}</span>
+                                    </div>
+                                    <div className="flex flex-col items-center border-l border-red-200/50 pl-2">
+                                        <span className="text-[8px] text-red-500/80 font-bold uppercase">Det</span>
+                                        <span className="text-xs font-black text-red-700">{avgDetractorsPerDay}</span>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Estimasi Tambahan Survey */}
@@ -281,6 +301,29 @@ export default function TargetNpsMonthly() {
                                     <span className="text-xs font-bold text-amber-500 mb-1">survei baru</span>
                                 </div>
                                 <span className="text-[10px] text-amber-500/80 font-medium mt-3">({avgSurveysPerDay} rata-rata × {remainingDays} sisa hari kerja)</span>
+                                
+                                <div className="mt-3 pt-3 border-t border-amber-200/60 flex items-center justify-between relative z-10 group cursor-help">
+                                    <span className="text-[9px] text-amber-600/90 font-bold uppercase tracking-wider">Potensi NPS (All Promotor)</span>
+                                    <span className="text-base font-black text-amber-700">{estimatedNpsIfAllPromoters}%</span>
+                                    
+                                    {/* Tooltip Popup */}
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-44 bg-white text-gray-800 text-xs rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-gray-100 p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                                        <div className="font-bold text-center border-b border-gray-100 pb-2 mb-2 text-[9px] uppercase tracking-widest text-gray-400">Detail Simulasi</div>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <span className="text-green-600 font-bold">Promotor</span>
+                                            <span className="font-black text-green-700">{promoters + estimatedRemainingSurveys}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <span className="text-gray-500 font-bold">Passive</span>
+                                            <span className="font-black text-gray-700">{passives}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-red-500 font-bold">Detractor</span>
+                                            <span className="font-black text-red-700">{detractors}</span>
+                                        </div>
+                                        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-gray-100 rotate-45"></div>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Required action from remaining surveys */}

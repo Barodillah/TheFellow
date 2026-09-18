@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
@@ -18,15 +18,37 @@ import {
     HelpCircle,
     ChevronDown,
     ChevronRight,
-    Calendar
+    Calendar,
+    FileText
 } from 'lucide-react';
+import LeaderboardPanel from '../LeaderboardPanel';
 
 export default function PanelLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
     const [openDropdowns, setOpenDropdowns] = useState({});
+    const [showNotif, setShowNotif] = useState(false);
+    const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
+    const notifRef = useRef(null);
+
+    // Close notification dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (notifRef.current && !notifRef.current.contains(event.target)) {
+                setShowNotif(false);
+            }
+        };
+
+        if (showNotif) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showNotif]);
 
     const toggleDropdown = (label) => {
         setOpenDropdowns(prev => ({
@@ -56,6 +78,13 @@ export default function PanelLayout() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // Close sidebar on mobile when route changes
+    useEffect(() => {
+        if (window.innerWidth < 1024) {
+            setSidebarOpen(false);
+        }
+    }, [location.pathname]);
+
     const sidebarLinks = [
         { icon: LayoutDashboard, label: 'Overview', path: '/panel' },
         {
@@ -63,7 +92,7 @@ export default function PanelLayout() {
             label: 'Tools CSM',
             submenu: [
                 { label: 'PDCA Generator', path: '/pdca-generator' },
-                { label: 'PDCA Tracker', path: '/pdca' },
+                { label: 'PDCA Tracker', path: '/pdca-tracker' },
                 { label: 'Activity Report', path: 'https://labsen.bewhy.id' },
                 { label: 'Calculator Target', path: '/calculator-target' },
                 { label: 'AI Roleplay', path: 'https://wai.bewhy.id' },
@@ -72,15 +101,24 @@ export default function PanelLayout() {
                 { label: 'Whatsapp Blast', path: '/whatsapp-blast' },
             ]
         },
+        {
+            icon: Award,
+            label: 'Pilar',
+            submenu: [
+                { label: 'Standar H.O.M.E', path: '/home-standard' },
+                { label: 'Metodologi PDCA', path: '/pdca-metodologi' }
+            ]
+        },
         { icon: MessageSquare, label: 'Forum Diskusi', path: '/forum' },
         { icon: HelpCircle, label: 'Kanal Quiz', path: '/kanal-quiz' },
         { icon: Users, label: 'Direktori Fellow', path: '/directory' },
-        { icon: Award, label: 'Standar H.O.M.E', path: '/home-standard' },
         { divider: true },
+        { icon: FileText, label: 'Artikel Saya', path: '/my-articles' },
         { icon: User, label: 'Profil Saya', path: '/profile' },
         { icon: Trophy, label: 'Achievements', path: '/achievements' },
         { icon: BookOpen, label: 'Publikasi', path: '/manage-publikasi' },
         ...(user?.role === 'admin' ? [
+            { divider: true },
             { icon: Users, label: 'Users', path: '/users' },
             { icon: Calendar, label: 'Manage Events', path: '/manage-events' }
         ] : [])
@@ -271,10 +309,58 @@ export default function PanelLayout() {
                     </div>
 
                     <div className="flex items-center space-x-3 lg:space-x-4">
-                        <button className="p-2 text-gray-400 hover:text-primary transition-colors relative rounded-full hover:bg-gray-50">
-                            <Bell className="w-5 h-5" />
-                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
+                        <button 
+                            onClick={() => setIsLeaderboardOpen(true)}
+                            className="p-2 text-gray-400 hover:text-accent transition-colors rounded-full hover:bg-gray-50"
+                            title="Leaderboard CSM"
+                        >
+                            <Trophy className="w-5 h-5" />
                         </button>
+                        
+                        <div className="relative" ref={notifRef}>
+                            <button 
+                                onClick={() => setShowNotif(!showNotif)}
+                                className="p-2 text-gray-400 hover:text-primary transition-colors relative rounded-full hover:bg-gray-50"
+                            >
+                                <Bell className="w-5 h-5" />
+                                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
+                            </button>
+                            
+                            {/* Notification Dropdown */}
+                            {showNotif && (
+                                <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                                    <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                                        <h3 className="font-bold text-primary">Notifikasi</h3>
+                                        <span className="text-xs text-accent font-semibold cursor-pointer">Tandai sudah dibaca</span>
+                                    </div>
+                                    <div className="max-h-[320px] overflow-y-auto">
+                                        {/* Mock Notif 1 */}
+                                        <div className="p-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors flex gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                                <MessageSquare className="w-5 h-5 text-blue-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-gray-700 leading-tight mb-1"><span className="font-bold text-primary">Sirojudin Hasan</span> membalas diskusi Anda di "Strategi Menghadapi Pelanggan".</p>
+                                                <span className="text-xs text-gray-400">10 menit yang lalu</span>
+                                            </div>
+                                        </div>
+                                        {/* Mock Notif 2 */}
+                                        <div className="p-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors flex gap-3 opacity-60">
+                                            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                                <Target className="w-5 h-5 text-emerald-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-gray-700 leading-tight mb-1">PDCA Tracker: Proyek "Reduksi Antrean" mencapai fase CHECK.</p>
+                                                <span className="text-xs text-gray-400">2 jam yang lalu</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="p-3 text-center border-t border-gray-100 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors">
+                                        <span className="text-sm font-semibold text-primary">Lihat Semua Notifikasi</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
                         <div className="h-8 w-px bg-gray-200 mx-1 hidden sm:block"></div>
 
@@ -310,6 +396,8 @@ export default function PanelLayout() {
                     <p>&copy; {new Date().getFullYear()} CSM Intellectual Society. All rights reserved.</p>
                 </footer>
             </div>
+
+            <LeaderboardPanel isOpen={isLeaderboardOpen} onClose={() => setIsLeaderboardOpen(false)} />
         </div>
     );
 }

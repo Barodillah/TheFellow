@@ -265,3 +265,40 @@ Tabel untuk menyimpan data dinamis Event Card di halaman Home.
 - `is_active` (BOOLEAN) - Status aktif event (TRUE jika ditampilkan).
 - `created_at` (TIMESTAMP)
 - `updated_at` (TIMESTAMP)
+
+### 14. Tabel `articles`
+Tabel untuk menyimpan data utama artikel (menggunakan format Markdown).
+- `id` (CHAR(36), Primary Key)
+- `author_id` (CHAR(36), Foreign Key ke tabel `users`)
+- `title` (VARCHAR(255))
+- `category` (VARCHAR(100))
+- `excerpt` (TEXT, Nullable) - Ringkasan singkat artikel
+- `content` (TEXT) - Isi artikel dalam format Markdown
+- `cover_image` (VARCHAR(255), Nullable) - Gambar sampul artikel
+- `status` (ENUM: 'draft', 'request', 'published', 'archived')
+- `views_count` (INT)
+- `likes_count` (INT)
+- `created_at` (TIMESTAMP)
+- `updated_at` (TIMESTAMP)
+
+### 15. Tabel `article_tags`
+Tabel untuk menyimpan hashtag/kategori spesifik per artikel.
+- `id` (INT AUTO_INCREMENT, Primary Key)
+- `article_id` (CHAR(36), Foreign Key ke tabel `articles`)
+- `tag_name` (VARCHAR(50))
+
+### 16. Tabel `article_references`
+Tabel untuk menyimpan daftar tautan referensi yang digunakan penulis artikel.
+- `id` (INT AUTO_INCREMENT, Primary Key)
+- `article_id` (CHAR(36), Foreign Key ke tabel `articles`)
+- `url` (TEXT)
+- `title` (VARCHAR(255))
+
+### 17. Tabel `article_forum_links`
+Tabel relasi (bridge) cerdas untuk mengaitkan Artikel dengan Forum Diskusi tanpa mengganggu arsitektur eksisting forum. 
+Thread forum baru dimunculkan (`is_visible_in_forum` = TRUE) saat artikel pertama kali dikomentari.
+- `article_id` (CHAR(36), Foreign Key ke tabel `articles`)
+- `thread_id` (CHAR(36), Foreign Key ke tabel `forum_threads`)
+- `is_visible_in_forum` (BOOLEAN) - Nilai default FALSE
+- `created_at` (TIMESTAMP)
+- *Primary Key* digabungkan (Composite) dari: `article_id` dan `thread_id`.

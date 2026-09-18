@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MessageSquare, Heart, Share2, MoreHorizontal, Link as LinkIcon, Calendar, TrendingUp, Check } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function ThreadDetail() {
     const { id } = useParams();
@@ -404,10 +406,11 @@ export default function ThreadDetail() {
                                 {thread.title}
                             </h1>
 
-                            <div
-                                className="prose prose-lg max-w-none text-gray-800 mb-8 leading-relaxed whitespace-pre-wrap"
-                                dangerouslySetInnerHTML={{ __html: thread.content }}
-                            ></div>
+                            <div className="prose prose-lg max-w-none text-gray-800 mb-8 leading-relaxed whitespace-pre-wrap font-sans">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {thread.content}
+                                </ReactMarkdown>
+                            </div>
 
                             {thread.link_metadata && (
                                 <div className="mb-8">

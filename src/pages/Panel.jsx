@@ -185,7 +185,7 @@ export default function Panel() {
                             <Target className="w-5 h-5 text-primary" />
                             <span>PDCA Tracker Terbaru</span>
                         </h3>
-                        <Link to="/pdca" className="text-xs text-accent hover:text-accent-light font-semibold">Lihat Semua</Link>
+                        <Link to="/pdca-tracker" className="text-xs text-accent hover:text-accent-light font-semibold">Lihat Semua</Link>
                     </div>
 
                     {recentProjects.length === 0 ? (
@@ -200,7 +200,7 @@ export default function Panel() {
                                 return (
                                     <div 
                                         key={proj.id} 
-                                        onClick={() => navigate('/pdca', { state: { openProjectId: proj.id } })}
+                                        onClick={() => navigate('/pdca-tracker', { state: { openProjectId: proj.id } })}
                                         className="bg-gray-50 border border-gray-100 p-4 rounded-2xl flex flex-col md:flex-row md:items-center gap-4 hover:border-blue-200 transition-colors cursor-pointer"
                                     >
                                         <div className="flex-1 min-w-0">

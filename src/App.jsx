@@ -11,6 +11,7 @@ import Profile from './pages/Profile';
 import Forum from './pages/Forum';
 import ThreadDetail from './pages/ThreadDetail';
 import Articles from './pages/Articles';
+import ArticleDetail from './pages/ArticleDetail';
 import PDCA from './pages/PDCA';
 import HOMEStandard from './pages/HOMEStandard';
 import About from './pages/About';
@@ -34,6 +35,12 @@ import PanelPublikasi from './pages/PanelPublikasi';
 import CalculatorTarget from './pages/CalculatorTarget';
 import PDCAGenerator from './pages/PDCAGenerator';
 import ManageEvents from './pages/ManageEvents';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsConditions from './pages/TermsConditions';
+import PDCAMetodologi from './pages/PDCAMetodologi';
+import Ekosistem from './pages/Ekosistem';
+import MyArticles from './pages/MyArticles';
+import ArticleForm from './pages/ArticleForm';
 
 function App() {
   return (
@@ -48,6 +55,7 @@ function App() {
           <Route path="/forum" element={<Forum />} />
           <Route path="/forum/:id" element={<ThreadDetail />} />
           <Route path="/articles" element={<Articles />} />
+          <Route path="/articles/:slug" element={<ArticleDetail />} />
           <Route path="/home-standard" element={<HOMEStandard />} />
           <Route path="/about" element={<About />} />
           <Route path="/quiz" element={<Quiz />} />
@@ -57,6 +65,10 @@ function App() {
           <Route path="/whatsapp-blast" element={<WaBlast />} />
           <Route path="/login" element={<Auth />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/kebijakan-privasi" element={<PrivacyPolicy />} />
+          <Route path="/syarat-ketentuan" element={<TermsConditions />} />
+          <Route path="/pdca-metodologi" element={<PDCAMetodologi />} />
+          <Route path="/ekosistem" element={<Ekosistem />} />
         </Route>
 
         {/* Panel (Dashboard) Routes */}
@@ -74,7 +86,10 @@ function App() {
           <Route path="/calculator-target" element={<CalculatorTarget />} />
           <Route path="/pdca-generator" element={<PDCAGenerator />} />
           <Route path="/manage-events" element={<ManageEvents />} />
-          <Route path="/pdca" element={<PDCA />} />
+          <Route path="/pdca-tracker" element={<PDCA />} />
+          <Route path="/my-articles" element={<MyArticles />} />
+          <Route path="/articles/create" element={<ArticleForm />} />
+          <Route path="/articles/edit/:id" element={<ArticleForm />} />
         </Route>
       </Routes>
     </BrowserRouter>

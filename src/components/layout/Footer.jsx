@@ -44,9 +44,9 @@ export default function Footer() {
                     <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-sm text-gray-500 font-sans">
                         <span>© 2026 CSM Intellectual Society. All rights reserved.</span>
                         <span className="hidden md:inline">·</span>
-                        <a href="#" className="hover:text-accent transition-colors">Kebijakan Privasi</a>
+                        <Link to="/kebijakan-privasi" className="hover:text-accent transition-colors">Kebijakan Privasi</Link>
                         <span className="hidden md:inline">·</span>
-                        <a href="#" className="hover:text-accent transition-colors">Syarat & Ketentuan</a>
+                        <Link to="/syarat-ketentuan" className="hover:text-accent transition-colors">Syarat & Ketentuan</Link>
                     </div>
                 </div>
             </footer>

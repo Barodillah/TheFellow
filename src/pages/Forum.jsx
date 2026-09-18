@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MessageSquare, Heart, Eye, Filter, Plus, Search, ChevronRight, Link as LinkIcon, Image as ImageIcon, Bold, Italic, Underline, Hash, Smile, X } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { THREADS_DATA, FELLOWS_DATA } from '../data/mockData';
 
 export default function Forum() {
@@ -136,10 +138,24 @@ export default function Forum() {
         thread.author_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Helper to format date
+    // Helper to format date with time (WIB / UTC+7)
     const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
+        // Ensure the date string is treated as UTC
+        const utcDateStr = dateString.endsWith('Z') ? dateString : dateString.replace(' ', 'T') + 'Z';
+        const date = new Date(utcDateStr);
+        
+        const datePart = new Intl.DateTimeFormat('id-ID', { 
+            day: 'numeric', month: 'long', year: 'numeric',
+            timeZone: 'Asia/Jakarta'
+        }).format(date);
+
+        const timePart = new Intl.DateTimeFormat('id-ID', {
+            hour: '2-digit', minute: '2-digit',
+            timeZone: 'Asia/Jakarta',
+            hour12: false
+        }).format(date).replace(':', '.');
+
+        return `${datePart} - ${timePart} WIB`;
     };
 
     const handleLike = async (threadId) => {
@@ -481,10 +497,11 @@ export default function Forum() {
                                         {thread.title}
                                     </h2>
 
-                                    <div
-                                        className="font-sans text-sm md:text-base text-gray-600 leading-relaxed mb-6 line-clamp-3"
-                                        dangerouslySetInnerHTML={{ __html: thread.content }}
-                                    ></div>
+                                    <div className="font-sans text-sm md:text-base text-gray-600 leading-relaxed mb-6 line-clamp-3 prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2">
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                            {thread.content}
+                                        </ReactMarkdown>
+                                    </div>
                                 </Link>
 
                                 {/* Link Preview Card */}

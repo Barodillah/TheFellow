@@ -157,3 +157,49 @@ CREATE TABLE events (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+-- 14. Membuat tabel articles (Markdown)
+CREATE TABLE articles (
+    id CHAR(36) PRIMARY KEY,
+    author_id CHAR(36) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    excerpt TEXT NULL,
+    content TEXT NOT NULL,
+    cover_image VARCHAR(255) NULL,
+    status ENUM('draft', 'request', 'published', 'archived') DEFAULT 'draft',
+    views_count INT DEFAULT 0,
+    likes_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- 15. Membuat tabel article_tags
+CREATE TABLE article_tags (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    article_id CHAR(36) NOT NULL,
+    tag_name VARCHAR(50) NOT NULL,
+    FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
+);
+
+-- 16. Membuat tabel article_references
+CREATE TABLE article_references (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    article_id CHAR(36) NOT NULL,
+    url TEXT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
+);
+
+-- 17. Membuat tabel article_forum_links (Penghubung Artikel & Forum)
+CREATE TABLE article_forum_links (
+    article_id CHAR(36) NOT NULL,
+    thread_id CHAR(36) NOT NULL,
+    is_visible_in_forum BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (article_id, thread_id),
+    FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE,
+    FOREIGN KEY (thread_id) REFERENCES forum_threads(id) ON DELETE CASCADE
+);

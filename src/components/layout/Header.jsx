@@ -84,6 +84,12 @@ export default function Header() {
                             </button>
                             <div className="absolute left-0 mt-0 w-48 bg-surface-card rounded-md shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-accent/20 z-50">
                                 <Link
+                                    to="/ekosistem"
+                                    className={`block px-4 py-2 text-sm hover:bg-surface-warm transition-colors ${isActive('/ekosistem') ? 'text-accent font-bold' : 'text-primary'}`}
+                                >
+                                    Ekosistem
+                                </Link>
+                                <Link
                                     to="/articles"
                                     className={`block px-4 py-2 text-sm hover:bg-surface-warm transition-colors ${isActive('/articles') ? 'text-accent font-bold' : 'text-primary'}`}
                                 >
@@ -119,10 +125,10 @@ export default function Header() {
                             </button>
                             <div className="absolute left-0 mt-0 w-48 bg-surface-card rounded-md shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-accent/20 z-50">
                                 <Link
-                                    to="/pdca"
-                                    className={`block px-4 py-2 text-sm hover:bg-surface-warm transition-colors ${isActive('/pdca') ? 'text-accent font-bold' : 'text-primary'}`}
+                                    to="/pdca-metodologi"
+                                    className={`block px-4 py-2 text-sm hover:bg-surface-warm transition-colors ${isActive('/pdca-metodologi') ? 'text-accent font-bold' : 'text-primary'}`}
                                 >
-                                    PDCA Tracker
+                                    PDCA Metodologi
                                 </Link>
                                 <Link
                                     to="/home-standard"
@@ -224,11 +230,18 @@ export default function Header() {
                             onClick={() => toggleMobileDropdown('news')}
                             className="flex items-center justify-between w-full text-left py-2 px-3 rounded hover:bg-primary-light text-gray-200 text-sm"
                         >
-                            <span>News</span>
+                            <span>News & Tool's</span>
                             <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${mobileDropdown === 'news' ? 'rotate-180' : ''}`} />
                         </button>
                         {mobileDropdown === 'news' && (
                             <div className="pl-6 py-2 space-y-2">
+                                <Link
+                                    to="/ekosistem"
+                                    onClick={closeMenu}
+                                    className="block w-full text-left py-1 text-gray-400 hover:text-accent text-sm"
+                                >
+                                    Ekosistem
+                                </Link>
                                 <Link
                                     to="/articles"
                                     onClick={closeMenu}
@@ -267,11 +280,11 @@ export default function Header() {
                         {mobileDropdown === 'pilar' && (
                             <div className="pl-6 py-2 space-y-2">
                                 <Link
-                                    to="/pdca"
+                                    to="/pdca-metodologi"
                                     onClick={closeMenu}
                                     className="block w-full text-left py-1 text-gray-400 hover:text-accent text-sm"
                                 >
-                                    PDCA Tracker
+                                    PDCA Metodologi
                                 </Link>
                                 <Link
                                     to="/home-standard"

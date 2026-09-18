@@ -1,15 +1,52 @@
-import React from 'react';
-import { Calendar, User, ArrowRight } from 'lucide-react';
-import { BLOG_ARTICLES_DATA } from '../data/mockData';
+import React, { useState, useEffect } from 'react';
+import { Calendar, User, ArrowRight, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Articles() {
+    const [articles, setArticles] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchArticles = async () => {
+            try {
+                const response = await fetch('https://incsmsociety.site/api/get_public_articles.php');
+                const data = await response.json();
+                if (data.success && data.data) {
+                    const formattedArticles = data.data.map(a => ({
+                        id: a.id,
+                        slug: a.slug,
+                        title: a.title,
+                        category: a.category,
+                        excerpt: a.excerpt,
+                        image: a.cover_image || '',
+                        author: a.author_name || 'Penulis Anonim',
+                        date: new Date(a.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
+                    }));
+                    setArticles(formattedArticles);
+                }
+            } catch (error) {
+                console.error("Fetch articles error:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchArticles();
+    }, []);
+
     // Separate featured article and the rest
-    const featuredArticle = BLOG_ARTICLES_DATA.find(article => article.isFeatured) || BLOG_ARTICLES_DATA[0];
-    const regularArticles = BLOG_ARTICLES_DATA.filter(article => article.id !== featuredArticle.id);
+    const featuredArticle = articles.length > 0 ? articles[0] : null;
+    const regularArticles = articles.length > 1 ? articles.slice(1) : [];
+
+    if (isLoading) {
+        return (
+            <div className="bg-surface-warm min-h-screen pt-6 md:pt-8 pb-20 flex justify-center items-center">
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
+    }
 
     return (
-        <div className="bg-surface-warm min-h-screen pt-24 pb-20">
+        <div className="bg-surface-warm min-h-screen pt-6 md:pt-8 pb-20">
             
             {/* Header Section */}
             <div className="max-w-7xl mx-auto px-4 mb-16 text-center">
@@ -22,7 +59,8 @@ export default function Articles() {
 
             {/* Featured Article (Highlight) */}
             <div className="max-w-7xl mx-auto px-4 mb-20">
-                <div className="bg-surface-card rounded-2xl border border-accent/20 shadow-2xl overflow-hidden group cursor-pointer flex flex-col md:flex-row hover:shadow-[0_20px_40px_-15px_rgba(212,175,55,0.2)] hover:border-accent/50 transition-all duration-500">
+                {featuredArticle ? (
+                    <Link to={`/articles/${featuredArticle.slug}`} className="bg-surface-card rounded-2xl border border-accent/20 shadow-2xl overflow-hidden group cursor-pointer flex flex-col md:flex-row hover:shadow-[0_20px_40px_-15px_rgba(212,175,55,0.2)] hover:border-accent/50 transition-all duration-500">
                     
                     {/* Image side */}
                     <div className="md:w-3/5 relative h-72 md:h-auto overflow-hidden">
@@ -75,7 +113,14 @@ export default function Articles() {
                             </div>
                         </div>
                     </div>
-                </div>
+                </Link>
+                ) : (
+                    <div className="bg-surface-card rounded-2xl border border-gray-200 border-dashed p-16 flex flex-col items-center justify-center text-center">
+                        <FileText size={32} className="text-gray-300 mb-4" />
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">Belum Ada Artikel</h3>
+                        <p className="text-gray-500">Belum ada publikasi yang diterbitkan saat ini.</p>
+                    </div>
+                )}
             </div>
 
             {/* Rest of the articles grid */}
@@ -86,7 +131,7 @@ export default function Articles() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {regularArticles.map(article => (
-                        <div key={article.id} className="bg-surface-card rounded-xl border border-accent/20 shadow-lg overflow-hidden group cursor-pointer hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col">
+                        <Link to={`/articles/${article.slug}`} key={article.id} className="bg-surface-card rounded-xl border border-accent/20 shadow-lg overflow-hidden group cursor-pointer hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col">
                             <div className="relative h-56 overflow-hidden">
                                 <div className="absolute inset-0 bg-primary/20 group-hover:bg-transparent transition-colors duration-500 z-10"></div>
                                 <img src={article.image} alt={article.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
@@ -118,7 +163,7 @@ export default function Articles() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             </div>
