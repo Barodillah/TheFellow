@@ -2,8 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Lightbulb, Target, Wrench, AlertTriangle, Layers, BookOpen } from 'lucide-react';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function PDCAMetodologi() {
+  useDocumentTitle('Metodologi PDCA');
     const phases = [
         {
             id: 'plan',

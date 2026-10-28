@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { HelpCircle, Clock, Calendar, CheckCircle, CheckCircle2, Lock, Plus, ArrowRight, Search, AlertCircle, Trophy, History, X, Star, ChevronRight, PlayCircle } from 'lucide-react';
+import { HelpCircle, Clock, Calendar, CheckCircle, CheckCircle2, Lock, Plus, ArrowRight, Search, AlertCircle, Trophy, History, X, Star, ChevronRight, PlayCircle, MoreVertical, Edit, Trash2, PowerOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import LeaderboardPanel from '../components/LeaderboardPanel';
+import ConfirmModal from '../components/shared/ConfirmModal';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function KanalQuiz() {
+  useDocumentTitle('Kanal Kuis');
     const [user, setUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [quizzes, setQuizzes] = useState([]);
@@ -14,6 +17,13 @@ export default function KanalQuiz() {
 
     // Leaderboard state
     const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+
+    // Admin Action states
+    const [activeDropdown, setActiveDropdown] = useState(null);
+    const [editingQuiz, setEditingQuiz] = useState(null);
+    const [deletingQuiz, setDeletingQuiz] = useState(null);
+    const [statusConfirm, setStatusConfirm] = useState(null);
+    const [isActionLoading, setIsActionLoading] = useState(false);
 
     useEffect(() => {
         const userData = localStorage.getItem('csm_user');
@@ -53,6 +63,98 @@ export default function KanalQuiz() {
 
         fetchQuizzes();
     }, [user?.id]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (activeDropdown && !event.target.closest('.dropdown-container')) {
+                setActiveDropdown(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [activeDropdown]);
+
+    const handleChangeStatus = (quizId, currentStatus) => {
+        const newStatus = currentStatus === 'active' ? 'expired' : 'active';
+        setStatusConfirm({ quizId, newStatus });
+    };
+
+    const confirmChangeStatus = async () => {
+        if (!statusConfirm) return;
+        const { quizId, newStatus } = statusConfirm;
+        try {
+            setIsActionLoading(true);
+            const response = await fetch('https://incsmsociety.site/api/edit_quiz.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: quizId, status: newStatus })
+            });
+            const result = await response.json();
+            if (result.success) {
+                setQuizzes(quizzes.map(q => q.id === quizId ? { ...q, status: newStatus } : q));
+                setActiveDropdown(null);
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            alert('Gagal mengubah status kuis.');
+        } finally {
+            setIsActionLoading(false);
+            setStatusConfirm(null);
+        }
+    };
+
+    const handleDeleteQuiz = async () => {
+        if (!deletingQuiz) return;
+        try {
+            setIsActionLoading(true);
+            const response = await fetch('https://incsmsociety.site/api/delete_quiz.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: deletingQuiz.id })
+            });
+            const result = await response.json();
+            if (result.success) {
+                setQuizzes(quizzes.filter(q => q.id !== deletingQuiz.id));
+                setDeletingQuiz(null);
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            alert('Gagal menghapus kuis.');
+        } finally {
+            setIsActionLoading(false);
+        }
+    };
+
+    const handleUpdateQuiz = async (e) => {
+        e.preventDefault();
+        if (!editingQuiz) return;
+        try {
+            setIsActionLoading(true);
+            const response = await fetch('https://incsmsociety.site/api/edit_quiz.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    id: editingQuiz.id,
+                    title: editingQuiz.title,
+                    description: editingQuiz.description,
+                    deadline: editingQuiz.deadline
+                })
+            });
+            const result = await response.json();
+            if (result.success) {
+                setQuizzes(quizzes.map(q => q.id === editingQuiz.id ? { ...q, title: editingQuiz.title, description: editingQuiz.description, deadline: editingQuiz.deadline } : q));
+                setEditingQuiz(null);
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            alert('Gagal memperbarui kuis.');
+        } finally {
+            setIsActionLoading(false);
+        }
+    };
 
     const handleOpenLeaderboard = () => {
         setIsLeaderboardOpen(true);
@@ -165,7 +267,23 @@ export default function KanalQuiz() {
                                             <div className="absolute top-0 right-0 bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
                                                 Berjalan
                                             </div>
-                                            <h3 className="font-bold text-gray-800 text-lg mb-2 pr-12">{quiz.title}</h3>
+                                            <div className="flex justify-between items-start mt-2">
+                                                <h3 className="font-bold text-gray-800 text-lg mb-2 pr-2">{quiz.title}</h3>
+                                                {user?.role === 'admin' && (
+                                                    <div className="relative z-20 dropdown-container">
+                                                        <button onClick={() => setActiveDropdown(activeDropdown === quiz.id ? null : quiz.id)} className="p-1 hover:bg-gray-100 rounded-full mt-1">
+                                                            <MoreVertical className="w-5 h-5 text-gray-500" />
+                                                        </button>
+                                                        {activeDropdown === quiz.id && (
+                                                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-1 z-30">
+                                                                <button onClick={() => {setEditingQuiz(quiz); setActiveDropdown(null);}} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"><Edit className="w-4 h-4"/> Edit Detail</button>
+                                                                <button onClick={() => handleChangeStatus(quiz.id, quiz.status)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"><PowerOff className="w-4 h-4"/> Tutup Kuis</button>
+                                                                <button onClick={() => {setDeletingQuiz(quiz); setActiveDropdown(null);}} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"><Trash2 className="w-4 h-4"/> Hapus Kuis</button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
                                             <p className="text-sm text-gray-600 mb-4 line-clamp-2">{quiz.description}</p>
 
                                             <div className="flex flex-col gap-2 mb-5">
@@ -216,7 +334,21 @@ export default function KanalQuiz() {
                                     <div key={quiz.id} className="bg-gray-50 border border-gray-200 rounded-2xl p-5 hover:border-gray-300 transition-colors flex flex-col justify-between">
                                         <div>
                                             <div className="flex justify-between items-start mb-2">
-                                                <h3 className="font-semibold text-gray-700 text-sm">{quiz.title}</h3>
+                                                <h3 className="font-semibold text-gray-700 text-sm pr-2">{quiz.title}</h3>
+                                                {user?.role === 'admin' && (
+                                                    <div className="relative z-20 dropdown-container">
+                                                        <button onClick={() => setActiveDropdown(activeDropdown === quiz.id ? null : quiz.id)} className="p-1 hover:bg-gray-200 rounded-full">
+                                                            <MoreVertical className="w-4 h-4 text-gray-500" />
+                                                        </button>
+                                                        {activeDropdown === quiz.id && (
+                                                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-1 z-30">
+                                                                <button onClick={() => {setEditingQuiz(quiz); setActiveDropdown(null);}} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"><Edit className="w-4 h-4"/> Edit Detail</button>
+                                                                <button onClick={() => handleChangeStatus(quiz.id, quiz.status)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"><PowerOff className="w-4 h-4"/> Buka Kuis</button>
+                                                                <button onClick={() => {setDeletingQuiz(quiz); setActiveDropdown(null);}} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"><Trash2 className="w-4 h-4"/> Hapus Kuis</button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
 
                                             <div className="flex items-center gap-1 text-[10px] text-gray-400 mb-4">
@@ -229,7 +361,7 @@ export default function KanalQuiz() {
                                             {quiz.isCompleted ? (
                                                 <div className="flex flex-col">
                                                     <span className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Skor Anda</span>
-                                                    <span className="text-lg font-bold text-green-600">{quiz.score ?? 0}</span>
+                                                    <span className="text-lg font-bold text-green-600">{quiz.userScore ?? 0}</span>
                                                 </div>
                                             ) : (
                                                 <div className="flex flex-col">
@@ -254,6 +386,65 @@ export default function KanalQuiz() {
             )}
 
             <LeaderboardPanel isOpen={isLeaderboardOpen} onClose={() => setIsLeaderboardOpen(false)} />
+
+            {/* Modals */}
+            {editingQuiz && (
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl relative">
+                        <button onClick={() => setEditingQuiz(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X className="w-5 h-5"/></button>
+                        <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Edit Detail Kuis</h2>
+                        <form onSubmit={handleUpdateQuiz} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Judul Kuis</label>
+                                <input required type="text" value={editingQuiz.title} onChange={(e) => setEditingQuiz({...editingQuiz, title: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Deskripsi Singkat</label>
+                                <textarea value={editingQuiz.description} onChange={(e) => setEditingQuiz({...editingQuiz, description: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm h-24" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Deadline Kuis</label>
+                                <input required type="datetime-local" value={editingQuiz.deadline} onChange={(e) => setEditingQuiz({...editingQuiz, deadline: e.target.value})} className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm" />
+                            </div>
+                            <div className="flex justify-end gap-3 pt-4">
+                                <button type="button" onClick={() => setEditingQuiz(null)} className="px-5 py-2 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl">Batal</button>
+                                <button type="submit" disabled={isActionLoading} className="px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary/90 rounded-xl shadow flex items-center gap-2">
+                                    {isActionLoading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/>} Simpan Perubahan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {deletingQuiz && (
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl text-center">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+                            <AlertCircle className="w-8 h-8" />
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-800 mb-2">Hapus Kuis?</h2>
+                        <p className="text-sm text-gray-500 mb-6">Anda yakin ingin menghapus kuis <strong>"{deletingQuiz.title}"</strong> secara permanen? Semua riwayat dan nilai partisipan juga akan terhapus.</p>
+                        <div className="flex gap-3">
+                            <button onClick={() => setDeletingQuiz(null)} className="flex-1 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition">Batal</button>
+                            <button onClick={handleDeleteQuiz} disabled={isActionLoading} className="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl transition flex items-center justify-center gap-2">
+                                {isActionLoading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/>} Hapus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <ConfirmModal
+                isOpen={!!statusConfirm}
+                title="Ubah Status Kuis?"
+                message={`Yakin ingin mengubah status kuis ini menjadi "${statusConfirm?.newStatus}"?`}
+                confirmText="Ya, Ubah Status"
+                variant={statusConfirm?.newStatus === 'expired' ? 'warning' : 'primary'}
+                isLoading={isActionLoading}
+                onConfirm={confirmChangeStatus}
+                onCancel={() => setStatusConfirm(null)}
+            />
         </div>
     );
 }

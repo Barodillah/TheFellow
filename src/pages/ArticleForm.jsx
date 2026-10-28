@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import {
     ArrowLeft, Save, Send, Image as ImageIcon, Plus,
     X, Type, Bold, Italic, Link as LinkIcon, List, Quote, FileText, Table as TableIcon,
@@ -16,6 +16,7 @@ import { TableHeader } from '@tiptap/extension-table-header';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { Markdown } from 'tiptap-markdown';
 import { BLOG_ARTICLES_DATA } from '../data/mockData';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 const CATEGORIES = [
     { label: "Pemikiran Kritis (Thought Leadership)", value: "Pemikiran Kritis" },
@@ -32,8 +33,10 @@ const CATEGORIES = [
 ];
 
 export default function ArticleForm() {
+  useDocumentTitle('Editor Artikel');
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const isEditMode = !!id;
 
     // GET ACTUAL USER DATA
@@ -99,10 +102,9 @@ export default function ArticleForm() {
             if (!editor) return;
             const currentContent = editor.storage.markdown.getMarkdown();
             
-            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            const response = await fetch("https://incsmsociety.site/api/openrouter.php", {
                 method: "POST",
                 headers: {
-                    "Authorization": `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
@@ -140,10 +142,9 @@ export default function ArticleForm() {
         try {
             const prompt = modalConfig.text;
             
-            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            const response = await fetch("https://incsmsociety.site/api/openrouter.php", {
                 method: "POST",
                 headers: {
-                    "Authorization": `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
@@ -262,6 +263,25 @@ Return ONLY a valid JSON object strictly matching this structure:
             },
         },
     });
+
+    // Populate prefilled content from navigation state (e.g. from SmartLibrary)
+    useEffect(() => {
+        if (!isEditMode && location.state && editor) {
+            if (location.state.title || location.state.category || location.state.excerpt) {
+                setFormData(prev => ({
+                    ...prev,
+                    ...(location.state.title && { title: location.state.title }),
+                    ...(location.state.category && { category: location.state.category }),
+                    ...(location.state.excerpt && { excerpt: location.state.excerpt }),
+                    ...(location.state.tags && { tags: location.state.tags })
+                }));
+            }
+            if (location.state.content) {
+                editor.commands.setContent(location.state.content);
+                setFormData(prev => ({ ...prev, content: location.state.content }));
+            }
+        }
+    }, [location.state, editor, isEditMode]);
 
     useEffect(() => {
         const fetchArticleDetail = async () => {

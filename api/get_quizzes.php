@@ -15,8 +15,11 @@ if (!$pdo) {
 $userId = isset($_GET['user_id']) ? $_GET['user_id'] : null;
 
 try {
-    // 1. Ambil semua kuis yang active
-    $stmt = $pdo->prepare("SELECT * FROM quizzes WHERE status = 'active' ORDER BY created_at DESC");
+    // Auto expire kuis (waktu di DB dalam UTC)
+    $pdo->query("UPDATE quizzes SET status = 'expired' WHERE status = 'active' AND deadline < UTC_TIMESTAMP()");
+
+    // 1. Ambil kuis yang active dan expired
+    $stmt = $pdo->prepare("SELECT * FROM quizzes WHERE status IN ('active', 'expired') ORDER BY created_at DESC");
     $stmt->execute();
     $quizzes = $stmt->fetchAll();
 
@@ -41,7 +44,7 @@ try {
         $quiz['submitted_at'] = null;
         
         if ($userId) {
-            $subStmt = $pdo->prepare("SELECT score, submitted_at FROM quiz_submissions WHERE quiz_id = :quiz_id AND user_id = :user_id LIMIT 1");
+            $subStmt = $pdo->prepare("SELECT score, answers, submitted_at FROM quiz_submissions WHERE quiz_id = :quiz_id AND user_id = :user_id LIMIT 1");
             $subStmt->execute([':quiz_id' => $quiz['id'], ':user_id' => $userId]);
             $submission = $subStmt->fetch();
             
@@ -49,6 +52,7 @@ try {
                 $quiz['isCompleted'] = true;
                 $quiz['userScore'] = $submission['score'];
                 $quiz['submitted_at'] = $submission['submitted_at'];
+                $quiz['userAnswers'] = json_decode($submission['answers'], true);
             }
         }
     }

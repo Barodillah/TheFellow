@@ -1,19 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, User, Share2, Bookmark, Eye, Heart, MessageSquare, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Share2, Bookmark, Eye, Heart, MessageSquare, ExternalLink, MoreHorizontal } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function ArticleDetail() {
+  useDocumentTitle('Baca Artikel');
     const { slug } = useParams();
     const navigate = useNavigate();
     const [article, setArticle] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [threadReplies, setThreadReplies] = useState([]);
 
     useEffect(() => {
+        const userData = JSON.parse(localStorage.getItem('csm_user') || '{}');
+        const userId = userData.id || '';
+
         const fetchArticle = async () => {
             try {
-                const response = await fetch(`https://incsmsociety.site/api/get_article_detail.php?slug=${slug}`);
+                const response = await fetch(`https://incsmsociety.site/api/get_article_detail.php?slug=${slug}&user_id=${userId}`);
                 const data = await response.json();
                 if (data.success && data.data) {
                     setArticle({
@@ -23,6 +30,10 @@ export default function ArticleDetail() {
                         date: new Date(data.data.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }),
                         image: data.data.cover_image || ''
                     });
+
+                    if (data.data.forum_thread_id) {
+                        fetchReplies(data.data.forum_thread_id);
+                    }
                 } else {
                     navigate('/articles');
                 }
@@ -34,11 +45,146 @@ export default function ArticleDetail() {
             }
         };
 
+        const fetchReplies = async (threadId) => {
+            try {
+                const resReplies = await fetch(`https://incsmsociety.site/api/forum/get_replies.php?thread_id=${threadId}`);
+                const dataReplies = await resReplies.json();
+                if (dataReplies.success) {
+                    const allReps = dataReplies.data;
+                    const topLevel = allReps.filter(r => !r.parent_id);
+                    topLevel.forEach(tl => {
+                        tl.replies = allReps.filter(r => r.parent_id === tl.id);
+                    });
+                    setThreadReplies(topLevel);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
         fetchArticle();
     }, [slug, navigate]);
 
     if (isLoading) return <div className="flex justify-center p-12"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>;
     if (!article) return null;
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        date.setHours(date.getHours() + 7);
+        return new Intl.DateTimeFormat('id-ID', {
+            hour: '2-digit', minute: '2-digit',
+            day: 'numeric', month: 'short', year: 'numeric'
+        }).format(date);
+    };
+
+    const ReplyItemReadonly = ({ reply, isNested = false }) => {
+        const replyAuthorName = reply.author_name;
+        const replyAuthorAvatar = reply.author_avatar || "https://ui-avatars.com/api/?name=" + replyAuthorName;
+        const handleRedirect = () => navigate(`/forum/${article.forum_thread_id}#${reply.id}`);
+
+        return (
+            <div className={`flex gap-3 md:gap-5 ${isNested ? 'mt-6' : 'border-b border-gray-100 pb-6 mb-6'}`}>
+                <div className="flex flex-col items-center">
+                    <div 
+                        className="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-full overflow-hidden border border-gray-200 z-10 bg-white cursor-pointer hover:border-primary transition-colors"
+                        onClick={handleRedirect}
+                    >
+                        <img src={replyAuthorAvatar} alt={replyAuthorName} className="w-full h-full object-cover" />
+                    </div>
+                    {reply.replies && reply.replies.length > 0 && (
+                        <div className="w-0.5 bg-gray-200 flex-grow mt-3 rounded-full"></div>
+                    )}
+                </div>
+
+                <div className="flex-grow pt-1">
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span 
+                                className="font-bold text-gray-900 hover:text-primary hover:underline transition-colors cursor-pointer"
+                                onClick={handleRedirect}
+                            >
+                                {replyAuthorName}
+                            </span>
+                            <span className="text-sm text-gray-300">•</span>
+                            <span className="text-sm text-gray-500">{formatDate(reply.created_at)}</span>
+                        </div>
+                        <button 
+                            className="text-gray-400 hover:text-primary transition-colors p-1.5 rounded-full hover:bg-gray-100"
+                            onClick={handleRedirect}
+                        >
+                            <MoreHorizontal className="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    <p className="text-gray-800 text-base leading-relaxed mb-4 whitespace-pre-wrap cursor-text">
+                        {reply.content}
+                    </p>
+
+                    <div className="flex items-center gap-8 text-gray-500 font-medium">
+                        <button
+                            onClick={handleRedirect}
+                            className="flex items-center gap-2 transition-colors group hover:text-blue-600"
+                        >
+                            <div className="p-2 rounded-full transition-colors group-hover:bg-blue-50">
+                                <MessageSquare className="w-4 h-4" />
+                            </div>
+                            <span className="text-sm">Balas</span>
+                        </button>
+                        <button
+                            onClick={handleRedirect}
+                            className="flex items-center gap-2 transition-colors group hover:text-pink-600"
+                        >
+                            <div className="p-2 rounded-full transition-colors group-hover:bg-pink-50">
+                                <Heart className="w-4 h-4" />
+                            </div>
+                            <span className="text-sm">{reply.likes_count || 0}</span>
+                        </button>
+                    </div>
+
+                    {reply.replies && reply.replies.length > 0 && (
+                        <div className="mt-2">
+                            {reply.replies.map(nested => (
+                                <ReplyItemReadonly key={nested.id} reply={nested} isNested={true} />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
+    const handleLike = async () => {
+        if (!article || !article.forum_thread_id) return;
+        const userData = JSON.parse(localStorage.getItem('csm_user') || '{}');
+        const userId = userData.id;
+        
+        if (!userId) {
+            alert("Silakan login untuk menyukai artikel ini.");
+            return;
+        }
+
+        try {
+            const response = await fetch('https://incsmsociety.site/api/forum/toggle_like.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: userId,
+                    entity_id: article.forum_thread_id,
+                    entity_type: 'thread'
+                })
+            });
+            const result = await response.json();
+            if (result.success) {
+                setArticle(prev => ({
+                    ...prev,
+                    is_liked: result.action === 'liked',
+                    likes_count: result.action === 'liked' ? prev.likes_count + 1 : prev.likes_count - 1
+                }));
+            }
+        } catch (error) {
+            console.error("Error toggling like:", error);
+        }
+    };
 
     return (
         <div className="bg-surface-warm min-h-screen pt-6 md:pt-8 pb-20">
@@ -112,8 +258,8 @@ export default function ArticleDetail() {
                                 <Eye className="w-5 h-5 text-gray-400" />
                                 <span className="font-semibold text-sm">{article.views_count || 0}</span>
                             </div>
-                            <button className="flex items-center gap-2 text-gray-500 hover:text-red-500 transition-colors group" title="Suka">
-                                <Heart className="w-5 h-5 text-gray-400 group-hover:text-red-500" />
+                            <button onClick={handleLike} className={`flex items-center gap-2 transition-colors group ${article.is_liked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`} title={article.is_liked ? "Batal Suka" : "Suka"}>
+                                <Heart className={`w-5 h-5 transition-colors ${article.is_liked ? 'text-red-500 fill-red-500' : 'text-gray-400 group-hover:text-red-500'}`} />
                                 <span className="font-semibold text-sm">{article.likes_count || 0}</span>
                             </button>
                             <button
@@ -149,15 +295,24 @@ export default function ArticleDetail() {
                         <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={{
+                                h1: ({ node, ...props }) => <h1 className="text-4xl font-extrabold text-primary mt-10 mb-6" {...props} />,
+                                h2: ({ node, ...props }) => <h2 className="text-3xl font-bold text-primary mt-10 mb-5 border-b border-gray-100 pb-2" {...props} />,
+                                h3: ({ node, ...props }) => <h3 className="text-2xl font-bold text-primary mt-8 mb-4" {...props} />,
+                                h4: ({ node, ...props }) => <h4 className="text-xl font-bold text-primary mt-6 mb-3" {...props} />,
+                                p: ({ node, ...props }) => <p className="mb-6 text-gray-800 leading-relaxed" {...props} />,
                                 img: ({ node, ...props }) => (
                                     <figure className="my-12">
-                                        <img {...props} className="w-full h-auto rounded-xl shadow-md border border-gray-200 object-cover max-h-[500px]" />
+                                        <img 
+                                            {...props} 
+                                            className="w-full h-auto rounded-xl shadow-md border border-gray-200 object-cover max-h-[500px] cursor-pointer hover:opacity-90 transition-opacity" 
+                                            onClick={() => setSelectedImage(props.src)}
+                                        />
                                         <figcaption className="text-center text-sm text-gray-500 mt-4 font-sans italic">{props.alt || 'Lampiran Visual / Data Pendukung'}</figcaption>
                                     </figure>
                                 )
                             }}
                         >
-                            {article.content || 'Konten tidak tersedia.'}
+                            {article.content ? article.content.replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/^(\#{1,6})(?!#|\s)(.*)/gm, '$1 $2') : 'Konten tidak tersedia.'}
                         </ReactMarkdown>
                     </div>
 
@@ -246,8 +401,19 @@ export default function ArticleDetail() {
                         </div>
                     </div>
 
+                    {/* List Komentar (Readonly) */}
+                    {threadReplies.length > 0 && (
+                        <div className="mt-10 pt-8 border-t border-gray-100">
+                            <div className="space-y-2">
+                                {threadReplies.map(reply => (
+                                    <ReplyItemReadonly key={reply.id} reply={reply} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {article.forum_thread_id && article.comments_count > 0 && (
-                        <div className="text-center mt-10 pt-8 border-t border-gray-100">
+                        <div className="text-center mt-6 pt-8 border-t border-gray-100">
                             <p className="text-gray-600 mb-3">Terdapat <span className="font-bold text-primary">{article.comments_count} balasan</span> dari Fellow lainnya di Forum.</p>
                             <Link to={`/forum/${article.forum_thread_id}`} className="inline-flex items-center gap-2 text-accent font-bold hover:text-primary transition-colors">
                                 Baca seluruh diskusi <ArrowLeft className="w-4 h-4 rotate-180" />
@@ -256,6 +422,29 @@ export default function ArticleDetail() {
                     )}
                 </div>
             </div>
+
+            {/* Fullscreen Image Modal */}
+            {selectedImage && (
+                <div 
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 cursor-zoom-out"
+                    onClick={() => setSelectedImage(null)}
+                >
+                    <div className="relative max-w-7xl max-h-screen">
+                        <button 
+                            className="absolute -top-12 right-0 text-white hover:text-accent p-2 transition-colors"
+                            onClick={(e) => { e.stopPropagation(); setSelectedImage(null); }}
+                        >
+                            Tutup
+                        </button>
+                        <img 
+                            src={selectedImage} 
+                            alt="Fullscreen view" 
+                            className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" 
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HelpCircle, Award } from 'lucide-react';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function Quiz() {
+  useDocumentTitle('Kuis Publik');
     const navigate = useNavigate();
     
     // Mini Quiz States

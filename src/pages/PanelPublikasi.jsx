@@ -6,8 +6,10 @@ import { useOutletContext } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import Toast from '../components/shared/Toast';
+import ConfirmModal from '../components/shared/ConfirmModal';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/legacy/build/pdf.worker.min.mjs`;
 
@@ -43,6 +45,7 @@ const FlipPage = React.forwardRef(({ pageNumber, isCover, title, description, pa
 FlipPage.displayName = 'FlipPage';
 
 export default function PanelPublikasi() {
+  useDocumentTitle('Kelola Publikasi');
     const { user } = useOutletContext();
     const [publikasi, setPublikasi] = useState([]);
     const [usersList, setUsersList] = useState([]);
@@ -51,6 +54,8 @@ export default function PanelPublikasi() {
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(true);
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+    const [deleteConfirm, setDeleteConfirm] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // Flipbook Preview State
     const [selectedDoc, setSelectedDoc] = useState(null);
@@ -313,25 +318,32 @@ export default function PanelPublikasi() {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Apakah Anda yakin ingin menghapus publikasi ini?")) {
-            try {
-                const res = await fetch(`${import.meta.env.BASE_URL}api/delete_publikasi.php`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id })
-                });
-                const json = await res.json();
-                if (json.status === 'success') {
-                    showToast(json.message, 'success');
-                    setPublikasi(publikasi.filter(p => p.id !== id));
-                } else {
-                    showToast(json.message, 'error');
-                }
-            } catch (err) {
-                console.error(err);
-                showToast('Gagal menghapus data.', 'error');
+    const handleDelete = (id) => {
+        setDeleteConfirm(id);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteConfirm) return;
+        setIsDeleting(true);
+        try {
+            const res = await fetch(`${import.meta.env.BASE_URL}api/delete_publikasi.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: deleteConfirm })
+            });
+            const json = await res.json();
+            if (json.status === 'success') {
+                showToast(json.message, 'success');
+                setPublikasi(publikasi.filter(p => p.id !== deleteConfirm));
+            } else {
+                showToast(json.message, 'error');
             }
+        } catch (err) {
+            console.error(err);
+            showToast('Gagal menghapus data.', 'error');
+        } finally {
+            setIsDeleting(false);
+            setDeleteConfirm(null);
         }
     };
 
@@ -841,6 +853,16 @@ export default function PanelPublikasi() {
                     )}
                 </div>
             , document.body)}
+
+            <ConfirmModal
+                isOpen={!!deleteConfirm}
+                title="Hapus Publikasi?"
+                message="Apakah Anda yakin ingin menghapus publikasi ini? Tindakan ini tidak dapat dibatalkan."
+                confirmText="Ya, Hapus"
+                isLoading={isDeleting}
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleteConfirm(null)}
+            />
 
             {/* Toast Notification */}
             <Toast 

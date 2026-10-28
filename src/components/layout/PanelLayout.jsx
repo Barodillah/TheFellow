@@ -4,6 +4,7 @@ import {
     LayoutDashboard,
     Users,
     MessageSquare,
+    Activity,
     Target,
     Award,
     Trophy,
@@ -44,7 +45,7 @@ export default function PanelLayout() {
         if (showNotif) {
             document.addEventListener('mousedown', handleClickOutside);
         }
-        
+
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
@@ -93,10 +94,9 @@ export default function PanelLayout() {
             submenu: [
                 { label: 'PDCA Generator', path: '/pdca-generator' },
                 { label: 'PDCA Tracker', path: '/pdca-tracker' },
-                { label: 'Activity Report', path: 'https://labsen.bewhy.id' },
                 { label: 'Calculator Target', path: '/calculator-target' },
-                { label: 'AI Roleplay', path: 'https://wai.bewhy.id' },
-                { label: 'One Link Quesioner', path: '/one-link-quesioner' },
+                { label: 'AI Roleplay', path: '/ai-roleplay' },
+                { label: 'Email Reply', path: '/email-reply' },
                 { label: 'CSM Labs', path: '/smart-library' },
                 { label: 'Whatsapp Blast', path: '/whatsapp-blast' },
             ]
@@ -120,7 +120,8 @@ export default function PanelLayout() {
         ...(user?.role === 'admin' ? [
             { divider: true },
             { icon: Users, label: 'Users', path: '/users' },
-            { icon: Calendar, label: 'Manage Events', path: '/manage-events' }
+            { icon: Calendar, label: 'Manage Events', path: '/manage-events' },
+            { icon: Activity, label: 'Page Logs', path: '/page-logs' }
         ] : [])
     ];
 
@@ -309,23 +310,23 @@ export default function PanelLayout() {
                     </div>
 
                     <div className="flex items-center space-x-3 lg:space-x-4">
-                        <button 
+                        <button
                             onClick={() => setIsLeaderboardOpen(true)}
                             className="p-2 text-gray-400 hover:text-accent transition-colors rounded-full hover:bg-gray-50"
                             title="Leaderboard CSM"
                         >
                             <Trophy className="w-5 h-5" />
                         </button>
-                        
+
                         <div className="relative" ref={notifRef}>
-                            <button 
+                            <button
                                 onClick={() => setShowNotif(!showNotif)}
                                 className="p-2 text-gray-400 hover:text-primary transition-colors relative rounded-full hover:bg-gray-50"
                             >
                                 <Bell className="w-5 h-5" />
                                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
                             </button>
-                            
+
                             {/* Notification Dropdown */}
                             {showNotif && (
                                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">

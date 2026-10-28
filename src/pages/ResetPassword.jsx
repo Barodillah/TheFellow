@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Mail, Key, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function ResetPassword() {
+  useDocumentTitle('Reset Password');
     const location = useLocation();
     const navigate = useNavigate();
     const [email, setEmail] = useState(location.state?.email || '');

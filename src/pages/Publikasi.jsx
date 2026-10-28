@@ -5,6 +5,7 @@ import { X, ChevronLeft, ChevronRight, BookOpen, Download, Loader2, Lock, EyeOff
 import Toast from '../components/shared/Toast';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/legacy/build/pdf.worker.min.mjs`;
 
@@ -42,6 +43,7 @@ const FlipPage = React.forwardRef(({ pageNumber, isCover, title, description, pa
 FlipPage.displayName = 'FlipPage';
 
 export default function Publikasi() {
+  useDocumentTitle('Daftar Publikasi');
     const [selectedDoc, setSelectedDoc] = useState(null);
     const [numPages, setNumPages] = useState(null);
     const [pageNumber, setPageNumber] = useState(1);

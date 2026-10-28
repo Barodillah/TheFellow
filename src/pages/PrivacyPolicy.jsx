@@ -1,7 +1,9 @@
 import React from 'react';
 import { ShieldCheck, Database, Lock } from 'lucide-react';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function PrivacyPolicy() {
+  useDocumentTitle('Kebijakan Privasi');
     return (
         <div className="bg-surface-warm min-h-screen pb-20">
             {/* Hero Section */}

@@ -2,8 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Shield, ArrowRight, User, BookOpen, MessageSquare, Target, Users, Wrench, Lightbulb, FolderKanban, Calculator, MessageCircle, Library, PenTool, BookMarked, Layers, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function Ekosistem() {
+  useDocumentTitle('Ekosistem');
     const containerVariants = {
         hidden: { opacity: 0 },
         show: {

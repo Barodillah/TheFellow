@@ -13,8 +13,10 @@ import {
     Bell
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function Panel() {
+  useDocumentTitle('Dashboard Utama');
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [recentProjects, setRecentProjects] = useState([]);

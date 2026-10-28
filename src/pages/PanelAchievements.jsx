@@ -3,14 +3,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Plus, Trash2, Calendar, Award, Loader2, Edit2, Medal } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
 import { createPortal } from 'react-dom';
+import ConfirmModal from '../components/shared/ConfirmModal';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function PanelAchievements() {
+  useDocumentTitle('Kelola Pencapaian');
     const { user } = useOutletContext();
     const [achievements, setAchievements] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState(null);
+    const [deleteConfirm, setDeleteConfirm] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     
     const [formData, setFormData] = useState({
         year: new Date().getFullYear().toString(),
@@ -103,14 +108,18 @@ export default function PanelAchievements() {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Yakin ingin menghapus prestasi ini?')) return;
-        setLoading(true);
+    const handleDelete = (id) => {
+        setDeleteConfirm(id);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteConfirm) return;
+        setIsDeleting(true);
         try {
             const res = await fetch('https://incsmsociety.site/api/delete_achievement.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, user_id: user.id })
+                body: JSON.stringify({ id: deleteConfirm, user_id: user.id })
             });
             const data = await res.json();
             if (data.status === 'success') {
@@ -121,7 +130,8 @@ export default function PanelAchievements() {
         } catch (err) {
             setError('Terjadi kesalahan saat menghapus.');
         } finally {
-            setLoading(false);
+            setIsDeleting(false);
+            setDeleteConfirm(null);
         }
     };
 
@@ -361,6 +371,16 @@ export default function PanelAchievements() {
                 )}
             </AnimatePresence>
             , document.body)}
+
+            <ConfirmModal
+                isOpen={!!deleteConfirm}
+                title="Hapus Prestasi?"
+                message="Yakin ingin menghapus prestasi ini? Tindakan ini tidak dapat dibatalkan."
+                confirmText="Ya, Hapus"
+                isLoading={isDeleting}
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleteConfirm(null)}
+            />
         </div>
     );
 }

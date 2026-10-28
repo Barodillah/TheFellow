@@ -40,11 +40,25 @@ try {
 
     $articles = $stmt->fetchAll();
 
-    // Fetch tags for each article
+    // Fetch tags and stats for each article
     foreach ($articles as &$article) {
+        // Tags
         $stmt_tags = $pdo->prepare("SELECT tag_name FROM article_tags WHERE article_id = ?");
         $stmt_tags->execute([$article['id']]);
         $article['tags'] = $stmt_tags->fetchAll(PDO::FETCH_COLUMN);
+
+        // Stats (Likes and Comments from forum_threads and forum_replies)
+        $stmt_stats = $pdo->prepare("
+            SELECT t.likes_count, (SELECT COUNT(*) FROM forum_replies WHERE thread_id = t.id) as comments_count 
+            FROM article_forum_links l 
+            JOIN forum_threads t ON l.thread_id = t.id 
+            WHERE l.article_id = ?
+        ");
+        $stmt_stats->execute([$article['id']]);
+        $stats = $stmt_stats->fetch();
+        
+        $article['likes_count'] = $stats ? (int)$stats['likes_count'] : 0;
+        $article['comments_count'] = $stats ? (int)$stats['comments_count'] : 0;
     }
 
     echo json_encode(['success' => true, 'data' => $articles]);

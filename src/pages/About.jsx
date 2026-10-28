@@ -1,7 +1,9 @@
 import React from 'react';
 import { BookOpen, ShieldCheck, Users, Lightbulb, HeartHandshake, ChevronRight, Target, Flag } from 'lucide-react';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function About() {
+  useDocumentTitle('Tentang Kami');
     return (
         <div className="bg-surface-warm min-h-screen pb-20">
             {/* Hero Section */}

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Award, Activity, BookOpen, MessageSquare, ArrowLeft, Trophy, Medal } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function PanelProfileView() {
+  useDocumentTitle('Detail Profil');
     const { id } = useParams();
     const navigate = useNavigate();
     const [user, setUser] = useState(null);

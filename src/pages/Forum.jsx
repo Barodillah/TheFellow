@@ -4,8 +4,10 @@ import { MessageSquare, Heart, Eye, Filter, Plus, Search, ChevronRight, Link as 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { THREADS_DATA, FELLOWS_DATA } from '../data/mockData';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function Forum() {
+  useDocumentTitle('Forum Diskusi');
     const navigate = useNavigate();
     const [activeCategory, setActiveCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');

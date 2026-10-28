@@ -10,6 +10,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit();
 }
 
+// Konfigurasi OpenRouter API Key (Disimpan aman di backend agar tidak bocor ke frontend)
+define('OPENROUTER_API_KEY', 'sk-or-XXXXX');
+$openrouter_api_key = OPENROUTER_API_KEY;
+
 // Pengaturan koneksi database
 $db_host = ''; // Sesuaikan jika menggunakan host berbeda
 $db_name = ''; // Ganti dengan nama database Anda

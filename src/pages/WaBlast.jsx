@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { UploadCloud, Sparkles, X, Loader2, RefreshCw, AlertTriangle, Check, Download, Coffee } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import ConfirmModal from '../components/shared/ConfirmModal';
 
 // =================== HELPERS ===================
 const formatPhone = (telp) => {
@@ -24,6 +26,7 @@ const WhatsappIcon = ({ size = 16, className = "" }) => (
 );
 
 const WaBlast = () => {
+  useDocumentTitle('WA Blast');
     const [blastData, setBlastData] = useState(() => {
         const stored = localStorage.getItem('blastManualData_public');
         return stored ? JSON.parse(stored).data : [];
@@ -46,6 +49,7 @@ const WaBlast = () => {
     const [resendModal, setResendModal] = useState({ show: false, item: null, rowIdx: null });
     const [invalidModal, setInvalidModal] = useState({ show: false, item: null, rowIdx: null });
     const [isCoffeeModalOpen, setIsCoffeeModalOpen] = useState(false);
+    const [clearConfirmModal, setClearConfirmModal] = useState(false);
     
     // Login state logic
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -116,13 +120,17 @@ const WaBlast = () => {
     };
 
     const handleClearBlastData = () => {
-        if (window.confirm('Yakin ingin menghapus data excel sementara?')) {
-            setBlastData([]);
-            setBlastHeaders([]);
-            setSentRows(new Set());
-            setInvalidRows(new Set());
-            localStorage.removeItem('blastManualData_public');
-        }
+        setClearConfirmModal(true);
+    };
+
+    const confirmClearBlastData = () => {
+        setBlastData([]);
+        setBlastHeaders([]);
+        setSentRows(new Set());
+        setInvalidRows(new Set());
+        localStorage.removeItem('blastManualData_public');
+        setClearConfirmModal(false);
+        showToast('Data excel sementara berhasil dibersihkan', 'info');
     };
 
     const handleDownloadExcel = () => {
@@ -211,13 +219,6 @@ const WaBlast = () => {
 
         setIsGenerating(true);
         try {
-            const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
-            if (!apiKey) {
-                showToast('API Key OpenRouter tidak ditemukan di .env', 'error');
-                setIsGenerating(false);
-                return;
-            }
-
             const availableVars = blastHeaders.filter(h => h.toLowerCase() !== 'wa').map(h => `{{${h}}}`).join(', ');
 
             const systemPrompt = `Anda adalah asisten pembuat template pesan WhatsApp profesional.
@@ -240,10 +241,9 @@ PENTING:
 
 Balas HANYA dengan isi template pesan saja, tanpa tambahan penjelasan apapun.`;
 
-            const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            const res = await fetch("https://incsmsociety.site/api/openrouter.php", {
                 method: "POST",
                 headers: {
-                    "Authorization": `Bearer ${apiKey}`,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
@@ -608,6 +608,16 @@ Balas HANYA dengan isi template pesan saja, tanpa tambahan penjelasan apapun.`;
                     </div>
                 </div>
             )}
+
+            {/* Clear Blast Data Confirmation Modal */}
+            <ConfirmModal
+                isOpen={clearConfirmModal}
+                title="Hapus Data Excel?"
+                message="Yakin ingin menghapus data excel sementara? Tindakan ini tidak dapat dibatalkan."
+                confirmText="Ya, Hapus"
+                onConfirm={confirmClearBlastData}
+                onCancel={() => setClearConfirmModal(false)}
+            />
         </div>
     );
 };

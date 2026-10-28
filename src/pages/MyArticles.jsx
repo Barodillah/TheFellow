@@ -7,6 +7,7 @@ import {
     Share2, ExternalLink
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 // GET ACTUAL USER DATA
 const userStr = localStorage.getItem('csm_user');
@@ -33,6 +34,7 @@ const getStatusConfig = (status) => {
 };
 
 export default function MyArticles() {
+  useDocumentTitle('Artikel Saya');
     const [articles, setArticles] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -139,8 +141,22 @@ export default function MyArticles() {
                             
                             <div className="p-5 flex-1 flex flex-col">
                                 <span className="text-xs text-gray-500 mb-2 font-medium flex items-center gap-1.5">
-                                    <Clock size={12}/> Terakhir diubah: {article.date}
+                                    <Clock size={12}/> Terakhir diubah: {new Date(article.updated_at || article.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}
                                 </span>
+                                {userRole === 'admin' && (
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className="w-5 h-5 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+                                            {article.author_avatar ? (
+                                                <img src={article.author_avatar} alt={article.author_name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary text-[8px] font-bold">
+                                                    {(article.author_name || '?').charAt(0)}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <span className="text-xs font-semibold text-gray-700">{article.author_name || 'Penulis Anonim'}</span>
+                                    </div>
+                                )}
                                 <h3 className="font-bold text-gray-800 text-lg leading-snug mb-2 line-clamp-2 hover:text-primary transition-colors cursor-pointer">
                                     {article.title}
                                 </h3>
@@ -157,16 +173,16 @@ export default function MyArticles() {
                                 <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-gray-500">
                                     <div className="flex gap-4">
                                         <div className="flex items-center gap-1.5" title="Views">
-                                            <Eye size={14} className={article.views > 0 ? "text-blue-500" : ""} />
-                                            <span className="text-xs font-semibold">{article.views}</span>
+                                            <Eye size={14} className={article.views_count > 0 ? "text-blue-500" : ""} />
+                                            <span className="text-xs font-semibold">{article.views_count || 0}</span>
                                         </div>
                                         <div className="flex items-center gap-1.5" title="Likes">
-                                            <Heart size={14} className={article.likes > 0 ? "text-rose-500" : ""} />
-                                            <span className="text-xs font-semibold">{article.likes}</span>
+                                            <Heart size={14} className={article.likes_count > 0 ? "text-rose-500" : ""} />
+                                            <span className="text-xs font-semibold">{article.likes_count || 0}</span>
                                         </div>
                                         <div className="flex items-center gap-1.5" title="Comments">
-                                            <MessageSquare size={14} className={article.comments > 0 ? "text-amber-500" : ""} />
-                                            <span className="text-xs font-semibold">{article.comments}</span>
+                                            <MessageSquare size={14} className={article.comments_count > 0 ? "text-amber-500" : ""} />
+                                            <span className="text-xs font-semibold">{article.comments_count || 0}</span>
                                         </div>
                                     </div>
                                     
@@ -224,7 +240,21 @@ export default function MyArticles() {
                                                 </div>
                                                 <div>
                                                     <h4 className="font-bold text-gray-800 line-clamp-1 hover:text-primary cursor-pointer transition-colors mb-1">{article.title}</h4>
-                                                    <span className="text-[10px] text-gray-500 font-medium flex items-center gap-1"><Clock size={10}/> {article.date}</span>
+                                                    <span className="text-[10px] text-gray-500 font-medium flex items-center gap-1"><Clock size={10}/> {new Date(article.updated_at || article.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                                                    {userRole === 'admin' && (
+                                                        <div className="flex items-center gap-1.5 mt-1.5">
+                                                            <div className="w-4 h-4 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+                                                                {article.author_avatar ? (
+                                                                    <img src={article.author_avatar} alt={article.author_name} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary text-[8px] font-bold">
+                                                                        {(article.author_name || '?').charAt(0)}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <span className="text-[10px] font-semibold text-gray-600">{article.author_name || 'Penulis Anonim'}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                             {article.status === 'archived' && (
@@ -242,16 +272,16 @@ export default function MyArticles() {
                                         <td className="p-4">
                                             <div className="flex items-center justify-center gap-3 text-gray-500">
                                                 <div className="flex flex-col items-center" title="Views">
-                                                    <Eye size={14} className={article.views > 0 ? "text-blue-500 mb-1" : "mb-1"} />
-                                                    <span className="text-[10px] font-bold">{article.views}</span>
+                                                    <Eye size={14} className={article.views_count > 0 ? "text-blue-500 mb-1" : "mb-1"} />
+                                                    <span className="text-[10px] font-bold">{article.views_count || 0}</span>
                                                 </div>
                                                 <div className="flex flex-col items-center" title="Likes">
-                                                    <Heart size={14} className={article.likes > 0 ? "text-rose-500 mb-1" : "mb-1"} />
-                                                    <span className="text-[10px] font-bold">{article.likes}</span>
+                                                    <Heart size={14} className={article.likes_count > 0 ? "text-rose-500 mb-1" : "mb-1"} />
+                                                    <span className="text-[10px] font-bold">{article.likes_count || 0}</span>
                                                 </div>
                                                 <div className="flex flex-col items-center" title="Comments">
-                                                    <MessageSquare size={14} className={article.comments > 0 ? "text-amber-500 mb-1" : "mb-1"} />
-                                                    <span className="text-[10px] font-bold">{article.comments}</span>
+                                                    <MessageSquare size={14} className={article.comments_count > 0 ? "text-amber-500 mb-1" : "mb-1"} />
+                                                    <span className="text-[10px] font-bold">{article.comments_count || 0}</span>
                                                 </div>
                                             </div>
                                         </td>

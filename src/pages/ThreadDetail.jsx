@@ -3,8 +3,10 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MessageSquare, Heart, Share2, MoreHorizontal, Link as LinkIcon, Calendar, TrendingUp, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function ThreadDetail() {
+  useDocumentTitle('Detail Diskusi');
     const { id } = useParams();
     const navigate = useNavigate();
 
@@ -87,6 +89,7 @@ export default function ThreadDetail() {
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
+        date.setHours(date.getHours() + 7);
         return new Intl.DateTimeFormat('id-ID', {
             hour: '2-digit', minute: '2-digit',
             day: 'numeric', month: 'short', year: 'numeric'

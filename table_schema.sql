@@ -203,3 +203,16 @@ CREATE TABLE article_forum_links (
     FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE,
     FOREIGN KEY (thread_id) REFERENCES forum_threads(id) ON DELETE CASCADE
 );
+
+-- 18. Membuat tabel page_logs
+CREATE TABLE page_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id CHAR(36) NULL,
+    session_id VARCHAR(255) NULL,
+    page_title VARCHAR(255) NULL,
+    page_url TEXT NOT NULL,
+    ip_address VARCHAR(45) NULL,
+    user_agent TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);

@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogIn, UserPlus, Mail, Lock, ArrowRight, Shield, Sparkles } from 'lucide-react';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function Auth() {
+  useDocumentTitle('Login Portal');
     const location = useLocation();
     const navigate = useNavigate();
     const defaultIsLogin = location.state?.isLogin !== undefined ? location.state.isLogin : true;

@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function HOMEStandard() {
+  useDocumentTitle('H.O.M.E Standard');
     const pillars = [
         {
             id: 'hospitality', key: 'H', title: 'Hospitality',

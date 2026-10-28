@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { HelpCircle, Award, ArrowLeft, Loader2 } from 'lucide-react';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function TakeQuiz() {
+  useDocumentTitle('Kerjakan Kuis');
     const { id } = useParams();
     const navigate = useNavigate();
     
@@ -178,7 +180,53 @@ export default function TakeQuiz() {
 
                         <div className="h-[1px] bg-accent/20 my-6" />
 
-                        {!quizStarted && quizScore === null && (
+                        {quizData.status === 'expired' ? (
+                            <div className="py-8 text-left">
+                                <div className="bg-red-500/10 text-red-400 border border-red-500/20 p-4 rounded-xl mb-6">
+                                    <p className="font-bold">Kuis Telah Berakhir</p>
+                                    <p className="text-sm">Batas waktu pengerjaan kuis ini telah lewat.</p>
+                                    {quizData.isCompleted && (
+                                        <p className="mt-2 text-sm text-gray-300">Skor Anda: <span className="font-bold text-accent">{quizData.userScore}</span></p>
+                                    )}
+                                </div>
+                                
+                                <h3 className="text-xl font-bold text-white mb-4">Riwayat Jawaban & Pembahasan</h3>
+                                <div className="space-y-8">
+                                    {quizData.questions.map((q, qIndex) => {
+                                        const maxScore = Math.max(...q.options.map(opt => Number(opt.score) || 0), 0);
+                                        const userAnswer = quizData.userAnswers?.find(ans => ans.qIndex === qIndex);
+                                        
+                                        return (
+                                            <div key={qIndex} className="bg-black/20 p-6 rounded-xl border border-gray-800">
+                                                <h4 className="font-bold text-lg text-white mb-4">{qIndex + 1}. {q.question_text}</h4>
+                                                <div className="space-y-2">
+                                                    {q.options.map((opt, optIndex) => {
+                                                        const isCorrect = Number(opt.score) === maxScore && maxScore > 0;
+                                                        const isSelected = userAnswer && userAnswer.selectedOption === optIndex;
+                                                        
+                                                        let style = "border-gray-700 bg-black/40 text-gray-400";
+                                                        if (isCorrect) style = "border-green-500 bg-green-500/20 text-green-300";
+                                                        else if (isSelected && !isCorrect) style = "border-red-500 bg-red-500/20 text-red-300";
+
+                                                        return (
+                                                            <div key={optIndex} className={`p-3 rounded-lg border ${style} flex justify-between`}>
+                                                                <span>{opt.text}</span>
+                                                                <div className="flex gap-2 text-right flex-col sm:flex-row">
+                                                                    {isSelected && <span className="text-xs font-bold uppercase tracking-wider text-red-300">(Jawaban Anda)</span>}
+                                                                    {isCorrect && <span className="text-xs font-bold uppercase tracking-wider text-green-300">(Jawaban Benar)</span>}
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    })}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                {!quizStarted && quizScore === null && (
                             <div className="py-8">
                                 {quizData.isCompleted && (
                                     <div className="bg-green-500/10 text-green-400 border border-green-500/20 p-4 rounded-xl mb-6 inline-block text-left">
@@ -276,6 +324,8 @@ export default function TakeQuiz() {
                                     </button>
                                 </div>
                             </div>
+                        )}
+                            </>
                         )}
                     </div>
                 </section>

@@ -3,8 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, Shield, User, Award, Search, Edit2, Trash2, Eye, CheckCircle } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import Toast from '../components/shared/Toast';
+import ConfirmModal from '../components/shared/ConfirmModal';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function Users() {
+  useDocumentTitle('Manajemen Pengguna');
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
@@ -13,6 +16,8 @@ export default function Users() {
     const [editingId, setEditingId] = useState(null);
     const [previewModal, setPreviewModal] = useState({ show: false, user: null });
     const [approving, setApproving] = useState(false);
+    const [deleteConfirm, setDeleteConfirm] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     
     const initialForm = { name: '', email: '', phone: '', role: 'member', title: '', join_year: new Date().getFullYear() };
     const [formData, setFormData] = useState(initialForm);
@@ -94,19 +99,23 @@ export default function Users() {
         setShowModal(true);
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Yakin ingin menghapus pengguna ini?')) return;
+    const handleDelete = (id) => {
+        setDeleteConfirm(id);
+    };
 
+    const confirmDelete = async () => {
+        if (!deleteConfirm) return;
+        setIsDeleting(true);
         try {
             const res = await fetch('https://incsmsociety.site/api/delete_user.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
+                body: JSON.stringify({ id: deleteConfirm })
             });
             const data = await res.json();
             if (data.status === 'success') {
                 showToast(data.message, 'success');
-                if (previewModal.show && previewModal.user?.id === id) {
+                if (previewModal.show && previewModal.user?.id === deleteConfirm) {
                     setPreviewModal({ show: false, user: null });
                 }
                 fetchUsers();
@@ -115,6 +124,9 @@ export default function Users() {
             }
         } catch (error) {
             showToast('Kesalahan koneksi saat menghapus', 'error');
+        } finally {
+            setIsDeleting(false);
+            setDeleteConfirm(null);
         }
     };
 
@@ -449,6 +461,16 @@ export default function Users() {
                 )}
             </AnimatePresence>
             , document.body)}
+
+            <ConfirmModal
+                isOpen={!!deleteConfirm}
+                title="Hapus Pengguna?"
+                message="Yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat dibatalkan."
+                confirmText="Ya, Hapus"
+                isLoading={isDeleting}
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleteConfirm(null)}
+            />
 
             <Toast show={toast.show} message={toast.message} type={toast.type} onClose={() => setToast(prev => ({ ...prev, show: false }))} />
         </div>

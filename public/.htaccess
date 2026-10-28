@@ -6,10 +6,9 @@
   RewriteCond %{REQUEST_URI} !^/api/ [NC]
   RewriteCond %{REQUEST_URI} !^/pdf/ [NC]
   
-  # Jangan redirect jika file atau direktori benar-benar ada
+  # Jangan redirect jika file benar-benar ada
   RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
   
-  # Selain kondisi di atas, redirect semua request ke index.html
-  RewriteRule . /index.html [L]
+  # Selain kondisi di atas, redirect semua request ke serve.php
+  RewriteRule . /serve.php [L]
 </IfModule>

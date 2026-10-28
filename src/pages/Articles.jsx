@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, User, ArrowRight, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function Articles() {
+  useDocumentTitle('Artikel Eksklusif');
     const [articles, setArticles] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 

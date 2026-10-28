@@ -2,14 +2,17 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Shield, ArrowRight, Calendar, User, RefreshCcw, HeartHandshake, BookOpen, MessageSquare, Target, Users, Zap, Globe, Award, Briefcase, FileText, ChevronRight, Wrench, Lightbulb, FolderKanban, Calculator, MessageCircle, Library, PenTool, BookMarked } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import DecorativeRule from '../components/shared/DecorativeRule';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 
 
 export default function Home() {
+  useDocumentTitle('Beranda');
     const sliderRef = useRef(null);
     const [isHovered, setIsHovered] = useState(false);
     const [dbFellows, setDbFellows] = useState([]);
     const [recentPublikasi, setRecentPublikasi] = useState([]);
+    const [recentArticles, setRecentArticles] = useState([]);
     const [events, setEvents] = useState([]);
     const [currentEventIndex, setCurrentEventIndex] = useState(0);
     const [ekosistemIndex, setEkosistemIndex] = useState(0);
@@ -92,6 +95,19 @@ export default function Home() {
             }
         };
         fetchPublikasi();
+
+        const fetchArticles = async () => {
+            try {
+                const res = await fetch(`https://incsmsociety.site/api/get_public_articles.php`);
+                const data = await res.json();
+                if (data.success && data.data) {
+                    setRecentArticles(data.data.slice(0, 3));
+                }
+            } catch (err) {
+                console.error("Gagal memuat artikel", err);
+            }
+        };
+        fetchArticles();
     }, []);
 
     // Create an infinite loop array by duplicating the data
@@ -514,6 +530,69 @@ export default function Home() {
                     </div>
                 </div>
             </section>
+
+            {/* NEWS & UPDATE SECTION */}
+            {recentArticles.length > 0 && (
+                <section className="py-24 px-4 bg-surface-card border-t border-gray-100">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+                            <div>
+                                <h2 className="font-serif text-3xl md:text-4xl font-bold text-primary mb-4 flex items-center gap-3">
+                                    <FileText className="w-8 h-8 text-accent" />
+                                    News & Update
+                                </h2>
+                                <p className="text-gray-600 max-w-2xl text-lg">
+                                    Simak berita, artikel, dan wawasan terbaru seputar inovasi pelayanan dan dinamika profesional CSM.
+                                </p>
+                            </div>
+                            <Link to="/articles" className="inline-flex items-center gap-2 text-primary font-bold hover:text-accent transition-colors shrink-0">
+                                Lihat Semua Berita <ArrowRight className="w-5 h-5" />
+                            </Link>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {recentArticles.map(article => (
+                                <Link to={`/articles/${article.slug}`} key={article.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group cursor-pointer hover:shadow-xl hover:-translate-y-2 transition-all duration-300 flex flex-col">
+                                    <div className="relative h-56 overflow-hidden">
+                                        <div className="absolute inset-0 bg-primary/20 group-hover:bg-transparent transition-colors duration-500 z-10"></div>
+                                        <img src={article.cover_image || article.image} alt={article.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                                        <div className="absolute top-4 left-4 z-20">
+                                            <span className="bg-accent text-primary text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded shadow-md">
+                                                {article.category}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-6 flex flex-col flex-grow">
+                                        <div className="flex items-center gap-4 text-[11px] text-slate-500 mb-3 font-semibold uppercase tracking-wide">
+                                            <span className="flex items-center gap-1.5">
+                                                <Calendar className="w-3.5 h-3.5 text-accent" /> 
+                                                {new Date(article.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}
+                                            </span>
+                                            <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5 text-accent" /> {article.author_name || article.author || 'Tim Redaksi'}</span>
+                                        </div>
+
+                                        <h3 className="font-serif text-lg font-bold text-primary leading-tight mb-3 group-hover:text-accent transition-colors duration-200 line-clamp-2">
+                                            {article.title}
+                                        </h3>
+
+                                        <p className="font-sans text-sm text-slate-600 leading-relaxed mb-6 line-clamp-3">
+                                            {article.excerpt}
+                                        </p>
+
+                                        <div className="mt-auto pt-4 border-t border-accent/10 flex items-center justify-between">
+                                            <span className="text-xs font-bold text-primary group-hover:text-accent transition-colors">Baca Selengkapnya</span>
+                                            <div className="w-8 h-8 rounded-full bg-primary-light/10 flex items-center justify-center group-hover:bg-accent transition-colors">
+                                                <ArrowRight className="w-4 h-4 text-primary" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
         </>
     );
 }

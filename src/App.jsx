@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import PublicLayout from './components/layout/PublicLayout';
 import PanelLayout from './components/layout/PanelLayout';
 import ScrollToTop from './components/layout/ScrollToTop';
+import PageTracker from './components/layout/PageTracker';
 
 // Pages
 import Home from './pages/Home';
@@ -41,11 +42,15 @@ import PDCAMetodologi from './pages/PDCAMetodologi';
 import Ekosistem from './pages/Ekosistem';
 import MyArticles from './pages/MyArticles';
 import ArticleForm from './pages/ArticleForm';
+import PageLogs from './pages/PageLogs';
+import AiRoleplay from './pages/AiRoleplay';
+import EmailReply from './pages/EmailReply';
 
 function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <ScrollToTop />
+      <PageTracker />
       <Routes>
         {/* Public Routes */}
         <Route element={<PublicLayout />}>
@@ -84,8 +89,11 @@ function App() {
           <Route path="/manage-publikasi" element={<PanelPublikasi />} />
           <Route path="/users" element={<Users />} />
           <Route path="/calculator-target" element={<CalculatorTarget />} />
+          <Route path="/ai-roleplay" element={<AiRoleplay />} />
+          <Route path="/email-reply" element={<EmailReply />} />
           <Route path="/pdca-generator" element={<PDCAGenerator />} />
           <Route path="/manage-events" element={<ManageEvents />} />
+          <Route path="/page-logs" element={<PageLogs />} />
           <Route path="/pdca-tracker" element={<PDCA />} />
           <Route path="/my-articles" element={<MyArticles />} />
           <Route path="/articles/create" element={<ArticleForm />} />

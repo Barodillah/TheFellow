@@ -1,7 +1,9 @@
 import React from 'react';
 import { ScrollText, Users, Scale, HeartHandshake } from 'lucide-react';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function TermsConditions() {
+  useDocumentTitle('Syarat & Ketentuan');
     return (
         <div className="bg-surface-warm min-h-screen pb-20">
             {/* Hero Section */}

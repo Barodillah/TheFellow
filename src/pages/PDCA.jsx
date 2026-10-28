@@ -3,8 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Target, Activity, CheckCircle2, ChevronLeft, Calendar, User, Lightbulb, RefreshCw, Trash2, ShieldCheck, BrainCircuit } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { generateFinalEvaluation } from '../services/openRouterService';
+import ConfirmModal from '../components/shared/ConfirmModal';
 
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 const PDCATracker = () => {
+  useDocumentTitle('PDCA Tracker');
   const navigate = useNavigate();
   const location = useLocation();
   const [projects, setProjects] = useState([]);
@@ -18,6 +21,7 @@ const PDCATracker = () => {
   
   // State for Continuous PDCA Confirmation Modal
   const [confirmCycle, setConfirmCycle] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   useEffect(() => {
     loadProjects();
@@ -49,11 +53,15 @@ const PDCATracker = () => {
   };
 
   const deleteProject = (id) => {
-    if(window.confirm('Hapus proyek PDCA ini?')) {
-      const newProjects = projects.filter(p => p.id !== id);
-      saveProjects(newProjects);
-      if(selectedProject?.id === id) setSelectedProject(null);
-    }
+    setDeleteConfirm(id);
+  };
+
+  const confirmDeleteProject = () => {
+    if (!deleteConfirm) return;
+    const newProjects = projects.filter(p => p.id !== deleteConfirm);
+    saveProjects(newProjects);
+    if(selectedProject?.id === deleteConfirm) setSelectedProject(null);
+    setDeleteConfirm(null);
   };
 
   const getProgress = (proj) => {
@@ -388,6 +396,16 @@ const PDCATracker = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Project Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!deleteConfirm}
+        title="Hapus Proyek PDCA?"
+        message="Seluruh data analisis dan rencana aksi pada proyek ini akan dihapus permanen."
+        confirmText="Ya, Hapus"
+        onConfirm={confirmDeleteProject}
+        onCancel={() => setDeleteConfirm(null)}
+      />
     </div>
   );
 };

@@ -4,8 +4,10 @@ import TargetSalesMonthly from '../components/calculator/TargetSalesMonthly';
 import TargetSalesYearly from '../components/calculator/TargetSalesYearly';
 import TargetNpsMonthly from '../components/calculator/TargetNpsMonthly';
 import TargetNpsYearly from '../components/calculator/TargetNpsYearly';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function CalculatorTarget() {
+  useDocumentTitle('Kalkulator Target');
     const [activeMainTab, setActiveMainTab] = useState('NPS'); // 'NPS' | 'Sales'
     const [activeSubTab, setActiveSubTab] = useState('Monthly'); // 'Monthly' | 'FiscalYear'
 

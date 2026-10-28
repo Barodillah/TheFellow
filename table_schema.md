@@ -302,3 +302,15 @@ Thread forum baru dimunculkan (`is_visible_in_forum` = TRUE) saat artikel pertam
 - `is_visible_in_forum` (BOOLEAN) - Nilai default FALSE
 - `created_at` (TIMESTAMP)
 - *Primary Key* digabungkan (Composite) dari: `article_id` dan `thread_id`.
+
+
+### 18. Tabel page_logs
+Tabel untuk mencatat setiap kunjungan halaman oleh pengguna maupun guest.
+- id (BIGINT AUTO_INCREMENT, Primary Key)
+- user_id (CHAR(36), Nullable, Foreign Key ke tabel users) - NULL jika guest.
+- session_id (VARCHAR(255), Nullable) - ID sesi untuk melacak guest atau sesi tertentu.
+- page_title (VARCHAR(255), Nullable) - Judul halaman yang dikunjungi.
+- page_url (TEXT) - URL halaman yang dikunjungi.
+- ip_address (VARCHAR(45), Nullable) - Alamat IP pengunjung.
+- user_agent (TEXT, Nullable) - Informasi browser/device pengunjung.
+- created_at (TIMESTAMP)

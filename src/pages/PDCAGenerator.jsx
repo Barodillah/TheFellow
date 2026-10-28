@@ -4,8 +4,10 @@ import ReactMarkdown from 'react-markdown';
 import { BrainCircuit, CheckCircle2, ListTodo, Target, Activity, Plus, Trash2, Send, Lightbulb, MessageSquare, Save, ChevronRight } from 'lucide-react';
 import { clarifyProblem, suggestWhyAnswer, analyzeRootCause, suggestPlan } from '../services/openRouterService';
 import Toast from '../components/shared/Toast';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 const PDCAGenerator = () => {
+  useDocumentTitle('PDCA Generator');
   const navigate = useNavigate();
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
@@ -34,9 +36,9 @@ const PDCAGenerator = () => {
   const [newParam, setNewParam] = useState({ name: '', target: '' });
   const [newPlan, setNewPlan] = useState({ goal: '', pic: '', deadline: '' });
 
-  // Load draft from LocalStorage
+  // Load draft from LocalStorage or navigation state
   useEffect(() => {
-    if (location.state && location.state.newCycle) {
+    if (location.state && (location.state.newCycle || location.state.problem)) {
       setProblem(location.state.problem || '');
       setContext(location.state.context || '');
       // Clear other states

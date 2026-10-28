@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Sparkles, Save, ChevronRight, Plus, Trash2, ArrowLeft, GripVertical, AlertTriangle, FileText } from 'lucide-react';
 import { generateQuizQuestions } from '../services/openRouterService';
 import Toast from '../components/shared/Toast';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function CreateQuiz() {
+  useDocumentTitle('Buat Kuis');
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
     

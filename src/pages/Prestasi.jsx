@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, ChevronDown, ChevronUp, Medal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function Prestasi() {
+  useDocumentTitle('Daftar Prestasi');
     const [achievements, setAchievements] = useState([]);
     const [loading, setLoading] = useState(true);
     const [expandedIds, setExpandedIds] = useState(new Set());

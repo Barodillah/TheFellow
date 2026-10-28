@@ -1,15 +1,12 @@
-const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
+const API_URL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/openrouter.php` 
+  : 'https://incsmsociety.site/api/openrouter.php';
 const MODEL = 'google/gemini-3.7-flash';
 
 const fetchOpenRouter = async (systemPrompt, userPrompt, expectJson = false) => {
-  if (!OPENROUTER_API_KEY) {
-    throw new Error('OpenRouter API key is missing. Please check your .env file.');
-  }
-
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  const response = await fetch(API_URL, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({

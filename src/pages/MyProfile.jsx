@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Award, Activity, BookOpen, MessageSquare, Edit3, Save, X, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Toast from '../components/shared/Toast';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function MyProfile() {
+  useDocumentTitle('Profil Saya');
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
     const [user, setUser] = useState(null);

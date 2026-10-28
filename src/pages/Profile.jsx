@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Award, Activity, BookOpen, MessageSquare, ArrowLeft, Trophy, Medal } from 'lucide-react';
 import DecorativeRule from '../components/shared/DecorativeRule';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function Profile() {
+  useDocumentTitle('Profil Fellow');
     const { id } = useParams();
     const [user, setUser] = useState(null);
     const [achievements, setAchievements] = useState([]);

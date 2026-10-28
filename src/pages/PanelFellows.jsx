@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Award, MessageSquare, Briefcase, Search, BookOpen } from 'lucide-react';
 import Toast from '../components/shared/Toast';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function PanelFellows() {
+  useDocumentTitle('Manajemen Fellows');
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
